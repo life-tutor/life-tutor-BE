@@ -20,18 +20,16 @@ public class Likes {
     public Long getId() {
         return id;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    // 연관관계 편의 메소드
-    public void setUser(UserDetailImpl userDetail){
+    public Likes(){}
+    public Likes(UserDetailImpl userDetail, Post post) {
         this.user = userDetail.getUser();
-    }
-    public void setPost(Post post){
         this.post = post;
         // 무한루프 체크
         if(!post.getLikes().contains(this)) post.getLikes().add(this);
+    }
+
+    // Check logic
+    public void alreadyLike(User user, Post post){
+        if(this.user.equals(user) && this.post.equals(post)) throw new IllegalArgumentException("이미 공감하셨습니다.");
     }
 }
