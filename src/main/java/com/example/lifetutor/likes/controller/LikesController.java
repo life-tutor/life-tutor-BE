@@ -1,29 +1,35 @@
 package com.example.lifetutor.likes.controller;
 
 import com.example.lifetutor.likes.service.LikesService;
-import lombok.RequiredArgsConstructor;
+import com.example.lifetutor.user.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
+@RequestMapping("/api/board")
 public class LikesController {
 
     private final LikesService likesService;
 
+    @Autowired
+    public LikesController(LikesService likesService) {
+        this.likesService = likesService;
+    }
+
     // 공감
-    @PostMapping("/api/board/{postingId}/likes")
-    public ResponseEntity<String> getLikes(@PathVariable Long postingId, @AuthenticationPrincipal UserDetailImpl userDetail){
-        return likesService.getLikes(postingId,userDetail);
+    @PostMapping("/{postingId}/likes")
+    public ResponseEntity<String> likes(@PathVariable Long postingId, @AuthenticationPrincipal User user){
+        likesService.likes(postingId,user);
+        return new ResponseEntity<>("공감 성공",HttpStatus.CREATED);
     }
 
     // 공감 삭제
-    @DeleteMapping("/api/board/{postingId}/likes")
-    public ResponseEntity<String> deleteLikes(@PathVariable Long postingId, @AuthenticationPrincipal UserDetailImpl userDetail){
-        return likesService.deleteLikes(postingId,userDetail);
+    @DeleteMapping("/{postingId}/likes")
+    public ResponseEntity<String> unLikes(@PathVariable Long postingId, @AuthenticationPrincipal User user){
+        likesService.unLikes(postingId,user);
+        return new ResponseEntity<>("공감 취소",HttpStatus.OK);
     }
 }

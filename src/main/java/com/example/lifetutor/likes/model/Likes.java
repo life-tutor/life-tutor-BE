@@ -1,5 +1,8 @@
 package com.example.lifetutor.likes.model;
 
+import com.example.lifetutor.post.model.Post;
+import com.example.lifetutor.user.model.User;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -20,16 +23,9 @@ public class Likes {
     public Long getId() {
         return id;
     }
-
-    public User getUser() {
-        return user;
-    }
-
-    // 연관관계 편의 메소드
-    public void setUser(UserDetailImpl userDetail){
-        this.user = userDetail.getUser();
-    }
-    public void setPost(Post post){
+    public Likes(){}
+    public Likes(User user, Post post) {
+        this.user = user;
         this.post = post;
         // 무한루프 체크
         if(!post.getLikes().contains(this)) post.getLikes().add(this);
