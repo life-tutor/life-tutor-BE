@@ -25,7 +25,7 @@ public class Comment extends Timestamped {
     @ManyToOne
     private Post post;
 
-    @OneToMany
+    @OneToMany(mappedBy = "comment")
     private List<CommentLikes> likes;
 
     public Comment() {}
