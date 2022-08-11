@@ -30,4 +30,9 @@ public class Likes {
         // 무한루프 체크
         if(!post.getLikes().contains(this)) post.getLikes().add(this);
     }
+
+    // Check logic
+    public void alreadyLike(User user, Post post){
+        if(this.user.equals(user) && this.post.equals(post)) throw new IllegalArgumentException("이미 공감하셨습니다.");
+    }
 }

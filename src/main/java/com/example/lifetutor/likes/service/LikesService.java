@@ -19,7 +19,6 @@ public class LikesService {
 
     private final LikesRepository likesRepository;
     private final PostRepository postRepository;
-
     @Autowired
     public LikesService(LikesRepository likesRepository, PostRepository postRepository) {
         this.likesRepository = likesRepository;
