@@ -4,12 +4,13 @@ import com.example.lifetutor.comment.dto.request.CommentRequestDto;
 import com.example.lifetutor.commentLikes.model.CommentLikes;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.user.model.User;
+import com.example.lifetutor.utility.Timestamped;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-public class Comment extends Timestamped{
+public class Comment extends Timestamped {
     @Id
     @GeneratedValue
     private Long id;
