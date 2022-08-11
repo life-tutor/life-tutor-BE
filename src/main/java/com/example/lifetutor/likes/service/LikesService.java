@@ -1,14 +1,11 @@
 package com.example.lifetutor.likes.service;
 
-import com.example.lifetutor.config.security.userDtail.UserDetailImpl;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.likes.repository.LikesRepository;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
 import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
