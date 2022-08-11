@@ -7,6 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 
 @Entity
 public class Likes {
@@ -15,9 +16,11 @@ public class Likes {
     private Long id;
 
     @ManyToOne
+    @NotNull
     private User user;
 
     @ManyToOne
+    @NotNull
     private Post post;
 
     public Long getId() {

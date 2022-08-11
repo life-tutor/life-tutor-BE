@@ -4,6 +4,7 @@ import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.user.model.User;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "COMMENTLIKES")
@@ -13,9 +14,11 @@ public class CommentLikes {
     private Long id;
 
     @ManyToOne
+    @NotNull
     private User user;
 
     @ManyToOne
+    @NotNull
     private Comment comment;
 
     public Long getId() {

@@ -7,6 +7,7 @@ import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -20,9 +21,11 @@ public class Comment extends Timestamped {
     String content;
 
     @ManyToOne
+    @NotNull
     private User user;
 
     @ManyToOne
+    @NotNull
     private Post post;
 
     @OneToMany(mappedBy = "comment")

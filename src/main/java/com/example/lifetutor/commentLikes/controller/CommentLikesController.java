@@ -1,7 +1,7 @@
 package com.example.lifetutor.commentLikes.controller;
 
 import com.example.lifetutor.commentLikes.service.CommentLikesService;
-import com.example.lifetutor.user.model.User;
+import com.example.lifetutor.config.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +21,15 @@ public class CommentLikesController {
 
     // 공감
     @PostMapping("/{commentId}/likes")
-    public ResponseEntity<String> likes(@PathVariable Long commentId, @AuthenticationPrincipal User user){
-        likesService.likes(commentId,user);
+    public ResponseEntity<String> likes(@PathVariable Long commentId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        likesService.likes(commentId,userDetails.getUser());
         return new ResponseEntity<>("공감 성공",HttpStatus.CREATED);
     }
 
     // 공감 삭제
     @DeleteMapping("/{commentId}/likes")
-    public ResponseEntity<String> unLikes(@PathVariable Long commentId, @AuthenticationPrincipal User user){
-        likesService.unLikes(commentId,user);
+    public ResponseEntity<String> unLikes(@PathVariable Long commentId, @AuthenticationPrincipal UserDetailsImpl userDetails){
+        likesService.unLikes(commentId,userDetails.getUser());
         return new ResponseEntity<>("공감 취소",HttpStatus.OK);
     }
 }
