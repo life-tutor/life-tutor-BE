@@ -43,6 +43,7 @@ public class CommentService {
     // 댓글 삭제
     public void delete(Long postingId, Long commentId, User user){
         postNotFound(postingId);
+        commentRepository.findById(commentId).ifPresent(comment -> comment.validateUser(user));
         commentRepository.deleteById(commentId);
     }
 
