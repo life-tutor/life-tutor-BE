@@ -1,7 +1,6 @@
 package com.example.lifetutor.user.service;
 
 import com.example.lifetutor.config.security.UserDetailsServiceImpl;
-import com.example.lifetutor.config.security.jwt.JwtDecoder;
 import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
@@ -62,6 +61,11 @@ public class UserService {
     public void checkEmail(String username) {
         if (userRepository.existsByUsername(username))
             throw new IllegalArgumentException("중복된 이메일 입니다.");
+    }
+
+    public void checkNickname(String nickname) {
+        if (userRepository.existsByNickname(nickname))
+            throw new IllegalArgumentException("중복된 닉네임 입니다.");
     }
 
     @Transactional

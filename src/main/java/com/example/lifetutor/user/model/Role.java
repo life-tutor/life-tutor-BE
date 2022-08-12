@@ -3,8 +3,9 @@ package com.example.lifetutor.user.model;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Role {
-    WORKER,
-    SEEKER;
+    SEEKER,
+    JUNIOR,
+    SENIOR;
 
     @JsonCreator
     public static Role from(String subject) {
