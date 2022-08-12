@@ -4,6 +4,7 @@ import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor
+@Getter
 public class Post extends Timestamped {
 
     @Id
@@ -49,4 +51,6 @@ public class Post extends Timestamped {
     public List<Comment> getComments() {
         return comments;
     }
+
+
 }

@@ -2,6 +2,7 @@ package com.example.lifetutor.post.controller;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
+import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.service.PostService;
 import org.springframework.data.domain.Page;
@@ -20,7 +21,7 @@ public class PostController {
     }
 
     @GetMapping("/api/main/postings")
-    public Page<Post> getPosts(
+    public PostResponseDto getPosts(
             @RequestParam("page") int page,
             @RequestParam("size") int size
     ) {
