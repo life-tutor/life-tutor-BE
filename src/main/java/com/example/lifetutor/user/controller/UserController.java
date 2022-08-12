@@ -38,9 +38,15 @@ public class UserController {
     }
 
     //이메일 중복 체크
-    @GetMapping("users/{email}")
+    @GetMapping("users/email/{email}")
     public void checkEmail(@PathVariable("email") String username) {
        userService.checkEmail(username);
+    }
+
+    //닉네임 중복 체크
+    @GetMapping("users/nickname/{nickname}")
+    public void checkNickname(@PathVariable("nickname") String nickname) {
+        userService.checkNickname(nickname);
     }
 
     //마이페이지 정보 수정
