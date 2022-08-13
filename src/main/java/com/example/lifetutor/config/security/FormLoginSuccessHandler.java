@@ -1,6 +1,7 @@
 package com.example.lifetutor.config.security;
 
 import com.example.lifetutor.config.security.jwt.JwtTokenUtils;
+import com.example.lifetutor.user.dto.response.LoginResponseDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -22,10 +23,15 @@ public class FormLoginSuccessHandler extends SavedRequestAwareAuthenticationSucc
         final UserDetailsImpl userDetails = ((UserDetailsImpl) authentication.getPrincipal());
         // Token 생성
         final String token = JwtTokenUtils.generateJwtToken(userDetails);
+
+        LoginResponseDto loginResponseDto = new LoginResponseDto(TOKEN_TYPE+ " " + token,userDetails.getUser().getUsername(),
+                userDetails.getUser().getNickname(),
+                userDetails.getUser().getUser_type());
+
         response.addHeader(AUTH_HEADER, TOKEN_TYPE + " " + token);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        objectMapper.writeValue(response.getWriter(),TOKEN_TYPE + " " + token);
+        objectMapper.writeValue(response.getWriter(),loginResponseDto);
 
     }
 

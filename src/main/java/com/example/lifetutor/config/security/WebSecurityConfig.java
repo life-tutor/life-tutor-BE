@@ -3,9 +3,12 @@ package com.example.lifetutor.config.security;
 import com.example.lifetutor.config.security.filter.FormLoginFilter;
 import com.example.lifetutor.config.security.filter.JwtAuthFilter;
 import com.example.lifetutor.config.security.jwt.HeaderTokenExtractor;
+import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.example.lifetutor.config.security.oauth2.UserOAuth2Service;
 import com.example.lifetutor.config.security.provider.FormLoginAuthProvider;
 import com.example.lifetutor.config.security.provider.JWTAuthProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -40,18 +43,15 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity // 스프링 Security 지원을 가능하게 함
 @EnableGlobalMethodSecurity(securedEnabled = true) // @Secured 어노테이션 활성화
+@AllArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JWTAuthProvider jwtAuthProvider;
     private final HeaderTokenExtractor headerTokenExtractor;
+    private final UserOAuth2Service userOAuth2Service;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
-    public WebSecurityConfig(
-            JWTAuthProvider jwtAuthProvider,
-            HeaderTokenExtractor headerTokenExtractor
-    ) {
-        this.jwtAuthProvider = jwtAuthProvider;
-        this.headerTokenExtractor = headerTokenExtractor;
-    }
+
 
     @Bean
     public BCryptPasswordEncoder encodePassword() {
@@ -80,7 +80,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // 서버에서 인증은 JWT로 인증하기 때문에 Session의 생성을 막습니다.
         http
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .oauth2Login()
+                .defaultSuccessUrl("/")
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .userInfoEndpoint()
+                .userService(userOAuth2Service);
 /*
         * 1.
                 * UsernamePasswordAuthenticationFilter 이전에 FormLoginFilter, JwtFilter 를 등록합니다.
