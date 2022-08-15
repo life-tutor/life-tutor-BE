@@ -24,7 +24,7 @@ public class Comment extends Timestamped {
     @NotNull
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER,optional = false)
     @NotNull
     private Post post;
 
