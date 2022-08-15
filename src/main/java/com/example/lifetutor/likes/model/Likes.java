@@ -3,10 +3,7 @@ package com.example.lifetutor.likes.model;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.user.model.User;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -19,13 +16,18 @@ public class Likes {
     @NotNull
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER,optional = false)
     @NotNull
     private Post post;
 
     public Long getId() {
         return id;
     }
+
+    public User getUser() {
+        return user;
+    }
+
     public Likes(){}
     public Likes(User user, Post post) {
         this.user = user;
