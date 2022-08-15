@@ -1,6 +1,8 @@
 package com.example.lifetutor.post.service;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
+import com.example.lifetutor.hashtag.model.Hashtag;
+import com.example.lifetutor.hashtag.repository.HashtagRepository;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.post.dto.response.Content;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
@@ -21,9 +23,11 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final HashtagRepository hashtagRepository;
 
-    public PostService(PostRepository postRepository) {
+    public PostService(PostRepository postRepository, HashtagRepository hashtagRepository) {
         this.postRepository = postRepository;
+        this.hashtagRepository = hashtagRepository;
     }
 
     public PostResponseDto getPosts(int page, int size) {
@@ -54,10 +58,16 @@ public class PostService {
         String title = postRequestDto.getTitle();
         String posting_content = postRequestDto.getPosting_content();
         String imgUrl = postRequestDto.getImgUrl();
-//        String hashtag;
+        List<String> hashtag = postRequestDto.getHashtag();
+
 
         User user = userDetails.getUser();
         Post post  = new Post(user, title, posting_content);
+
+        for (String s : hashtag) {
+            Hashtag ht = new Hashtag(post, s);
+            hashtagRepository.save(ht);
+        }
 
         postRepository.save(post);
     }
