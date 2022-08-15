@@ -17,7 +17,7 @@ public class CommentLikes {
     @NotNull
     private User user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER,optional = false)
     @NotNull
     private Comment comment;
 
