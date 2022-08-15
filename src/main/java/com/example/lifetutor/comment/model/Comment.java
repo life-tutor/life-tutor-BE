@@ -20,11 +20,11 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     String content;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private Post post;
 
@@ -38,6 +38,14 @@ public class Comment extends Timestamped {
         // 무한루프 체크
         if(!post.getComments().contains(this)) post.getComments().add(this);
         this.content = requestDto.getContent();
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getContent() {
+        return content;
     }
 
     public User getUser() {

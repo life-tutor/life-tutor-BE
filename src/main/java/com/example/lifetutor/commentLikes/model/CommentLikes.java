@@ -13,17 +13,22 @@ public class CommentLikes {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER,optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @NotNull
     private Comment comment;
 
     public Long getId() {
         return id;
     }
+
+    public User getUser() {
+        return user;
+    }
+
     public CommentLikes(){}
     public CommentLikes(User user, Comment comment) {
         this.user = user;
