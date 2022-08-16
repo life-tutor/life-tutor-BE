@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ public class PostService {
         return new PostResponseDto(content, posts.isLast());
     }
 
+    @Transactional
     public void registerPost(PostRequestDto postRequestDto, UserDetailsImpl userDetails) {
         String title = postRequestDto.getTitle();
         String posting_content = postRequestDto.getPosting_content();

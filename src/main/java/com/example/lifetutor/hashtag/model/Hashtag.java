@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Entity
+@NoArgsConstructor
 public class Hashtag {
 
     @Id
