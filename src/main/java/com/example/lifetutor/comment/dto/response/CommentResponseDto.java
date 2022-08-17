@@ -3,6 +3,7 @@ package com.example.lifetutor.comment.dto.response;
 import com.example.lifetutor.comment.model.Comment;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class CommentResponseDto {
     private Long id;
