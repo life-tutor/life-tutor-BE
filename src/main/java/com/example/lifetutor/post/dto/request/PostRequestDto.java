@@ -1,5 +1,6 @@
 package com.example.lifetutor.post.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -7,7 +8,7 @@ import java.util.List;
 
 @Setter
 @Getter
-public class PostRequestDto {
+public class PostRequestDto{
 
     private String title;
     private String posting_content;

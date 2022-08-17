@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -12,6 +13,7 @@ public class Content {
     private Long posting_id;
     private String nickname;
     private String title;
+
     private LocalDate date;
     private String posting_content;
     private int comment_count;
