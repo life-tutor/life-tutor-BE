@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,9 +32,10 @@ public class PostService {
         this.hashtagRepository = hashtagRepository;
     }
 
+    @Transactional
     public PostResponseDto getPosts(int page, int size) {
-        Sort.Direction direction = Sort.Direction.ASC;
-        Sort sort = Sort.by(direction, "date");
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Post> posts = postRepository.findAll(pageable);
@@ -41,7 +43,7 @@ public class PostService {
         List<Post> contents = posts.getContent();
 
         List<Content> content = new ArrayList<>();
-        for(Post p : contents) {
+        for (Post p : contents) {
             Long postingId = p.getId();
             String nickname = p.getUser().getNickname();
             String title = p.getTitle();
@@ -52,7 +54,7 @@ public class PostService {
             int like_count = p.getLikes().size();
 
             List<String> hashtags = new ArrayList<>();
-            for(Hashtag h : hashtag) hashtags.add(h.getHashtag());
+            for (Hashtag h : hashtag) hashtags.add(h.getHashtag());
 
             Content c = new Content(postingId, nickname, title, date, posting_content, true, hashtags, comment_count, like_count);
             content.add(c);
@@ -70,7 +72,7 @@ public class PostService {
 
 
         User user = userDetails.getUser();
-        Post post  = new Post(user, title, posting_content);
+        Post post = new Post(user, title, posting_content);
 
         for (String s : hashtag) {
             Hashtag ht = new Hashtag(post, s);
