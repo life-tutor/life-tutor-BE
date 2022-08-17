@@ -47,8 +47,14 @@ public class PostService {
             String title = p.getTitle();
             LocalDate date = p.getDate();
             String posting_content = p.getPosting_content();
+            List<Hashtag> hashtag = hashtagRepository.findAllByPostId(p.getId());
+            int comment_count = p.getComments().size();
+            int like_count = p.getLikes().size();
 
-            Content c = new Content(postingId, nickname, title, date, posting_content, true);
+            List<String> hashtags = new ArrayList<>();
+            for(Hashtag h : hashtag) hashtags.add(h.getHashtag());
+
+            Content c = new Content(postingId, nickname, title, date, posting_content, true, hashtags, comment_count, like_count);
             content.add(c);
         }
 

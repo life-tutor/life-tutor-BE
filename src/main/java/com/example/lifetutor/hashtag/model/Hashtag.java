@@ -1,13 +1,14 @@
 package com.example.lifetutor.hashtag.model;
 
 import com.example.lifetutor.post.model.Post;
-import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
 @Entity
 @NoArgsConstructor
+@Getter
 public class Hashtag {
 
     @Id

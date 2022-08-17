@@ -24,7 +24,7 @@ public class Post extends Timestamped {
     private User user;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "post", cascade = CascadeType.REMOVE)
-    private List<Likes> postLikes;
+    private List<Likes> likes;
 
     @Column(nullable = false)
     private String title;
@@ -43,14 +43,4 @@ public class Post extends Timestamped {
         this.title = title;
         this.posting_content = posting_content;
     }
-
-    public List<Likes> getLikes() {
-        return postLikes;
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-
 }
