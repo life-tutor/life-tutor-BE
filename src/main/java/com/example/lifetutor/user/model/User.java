@@ -1,6 +1,7 @@
 package com.example.lifetutor.user.model;
 
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
+import jdk.jfr.Name;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
