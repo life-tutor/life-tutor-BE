@@ -1,11 +1,13 @@
 package com.example.lifetutor.post.controller;
 
+import com.example.lifetutor.config.security.UserDetailsImpl;
+import com.example.lifetutor.post.dto.request.PostRequestDto;
+import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.service.PostService;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -19,10 +21,15 @@ public class PostController {
     }
 
     @GetMapping("/api/main/postings")
-    public Page<Post> getPosts(
+    public PostResponseDto getPosts(
             @RequestParam("page") int page,
             @RequestParam("size") int size
     ) {
         return postService.getPosts(page, size);
+    }
+
+    @PostMapping("/api/board")
+    public void registerPost(@RequestBody PostRequestDto postRequestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        postService.registerPost(postRequestDto, userDetails);
     }
 }
