@@ -52,7 +52,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
 
-
     @Bean
     public BCryptPasswordEncoder encodePassword() {
         return new BCryptPasswordEncoder();
@@ -87,12 +86,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .userInfoEndpoint()
                 .userService(userOAuth2Service);
-/*
-        * 1.
-                * UsernamePasswordAuthenticationFilter 이전에 FormLoginFilter, JwtFilter 를 등록합니다.
+        /*
+         * 1.
+         * UsernamePasswordAuthenticationFilter 이전에 FormLoginFilter, JwtFilter 를 등록합니다.
          * FormLoginFilter : 로그인 인증을 실시합니다.
-                * JwtFilter       : 서버에 접근시 JWT 확인 후 인증을 실시합니다.
-                */
+         * JwtFilter       : 서버에 접근시 JWT 확인 후 인증을 실시합니다.
+         */
         http
                 .addFilterBefore(formLoginFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -109,15 +108,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 // css 폴더를 login 없이 허용
                 .antMatchers("/css/**").permitAll()
 // 회원 관리 처리 API 전부를 login 없이 허용
-                .antMatchers(HttpMethod.GET,"/api/**").permitAll()
-                .antMatchers(HttpMethod.POST ,"/api/signup").permitAll()
-                .antMatchers(HttpMethod.POST,"/api/login").permitAll()
-                .antMatchers(HttpMethod.GET,"/api/users/**").permitAll()
-                .antMatchers(HttpMethod.GET,"/").permitAll()
-                .antMatchers(HttpMethod.GET,"/login").permitAll()
-                .antMatchers(HttpMethod.GET,"/join").permitAll()
-                .antMatchers(HttpMethod.GET,"/post/**").permitAll()
-                .antMatchers(HttpMethod.GET,"/post").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/signup").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/login").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/users/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/").permitAll()
+                .antMatchers(HttpMethod.GET, "/login").permitAll()
+                .antMatchers(HttpMethod.GET, "/join").permitAll()
+                .antMatchers(HttpMethod.GET, "/post/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/post").permitAll()
 // 그 외 어떤 요청이든 '인증'
                 .anyRequest().authenticated()
                 .and()
@@ -181,7 +180,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("GET,/login");
         skipPathList.add("GET,/join");
         skipPathList.add("GET,/post/**");
-        skipPathList.add("GET,/api/main/**");
+//        skipPathList.add("GET,/api/main/**");
         skipPathList.add("GET,/post");
 
         FilterSkipMatcher matcher = new FilterSkipMatcher(
@@ -221,7 +220,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     }
 
-    private static class customLogoutSuccessHandler implements LogoutSuccessHandler{
+    private static class customLogoutSuccessHandler implements LogoutSuccessHandler {
         private final ObjectMapper objectMapper = new ObjectMapper();
 
         @Override
@@ -230,7 +229,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             response.setCharacterEncoding("UTF-8");
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-            objectMapper.writeValue(response.getWriter(),"로그아웃에 성공했습니다");
+            objectMapper.writeValue(response.getWriter(), "로그아웃에 성공했습니다");
 
 
         }
@@ -239,13 +238,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
         private final ObjectMapper objectMapper = new ObjectMapper();
+
         @Override
-       public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+        public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
 
             objectMapper.writeValue(response.getWriter(), authException.getMessage());
         }
-  }
+    }
 }

@@ -32,9 +32,6 @@ public class Post extends Timestamped {
     @Column(nullable = false)
     private String posting_content;
 
-//    @Column(nullable = false)
-//    private boolean isLike;
-
     @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Comment> comments;
 

@@ -9,7 +9,7 @@ public class CommentResponseDto {
     private Long id;
     private String nickname;
     private String content;
-    private LocalDate date;
+    private LocalDateTime date;
     private int like_count;
     private boolean isLike;
 
@@ -34,7 +34,7 @@ public class CommentResponseDto {
         return content;
     }
 
-    public LocalDate getDate() {
+    public LocalDateTime getDate() {
         return date;
     }
 

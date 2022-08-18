@@ -23,9 +23,10 @@ public class PostController {
     @GetMapping("/api/main/postings")
     public PostResponseDto getPosts(
             @RequestParam("page") int page,
-            @RequestParam("size") int size
+            @RequestParam("size") int size,
+            @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        return postService.getPosts(page, size);
+        return postService.getPosts(page, size, userDetails);
     }
 
     @PostMapping("/api/board")
