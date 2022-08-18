@@ -12,10 +12,6 @@ import java.util.TimeZone;
 @EnableJpaAuditing
 @SpringBootApplication
 public class LifetutorApplication {
-    @PostConstruct
-    void started() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Seoul"));
-    }
 
     public static void main(String[] args) {
 

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -13,14 +14,14 @@ public class Content {
     private String nickname;
     private String title;
 
-    private LocalDate date;
+    private LocalDateTime date;
     private String posting_content;
     private int comment_count;
     private int like_count;
     private boolean isLike;
     private List<String> hashtag;
 
-    public Content(Long postingId, String nickname, String title, LocalDate date, String posting_content, List<String> hashtag, int comment_count, int like_count, boolean isLike) {
+    public Content(Long postingId, String nickname, String title, LocalDateTime date, String posting_content, List<String> hashtag, int comment_count, int like_count, boolean isLike) {
         this.posting_id = postingId;
         this.nickname = nickname;
         this.title = title;

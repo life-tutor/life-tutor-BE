@@ -17,7 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +47,7 @@ public class PostService {
             Long postingId = p.getId();
             String nickname = p.getUser().getNickname();
             String title = p.getTitle();
-            LocalDate date = p.getDate();
+            LocalDateTime date = p.getDate();
             String posting_content = p.getPosting_content();
             List<Hashtag> hashtag = hashtagRepository.findAllByPostId(p.getId());
             int comment_count = p.getComments().size();
@@ -68,10 +68,8 @@ public class PostService {
             Content c = new Content(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike);
             content.add(c);
         }
-
         return new PostResponseDto(content, posts.isLast());
     }
-
     @Transactional
     public void registerPost(PostRequestDto postRequestDto, UserDetailsImpl userDetails) {
         String title = postRequestDto.getTitle();
