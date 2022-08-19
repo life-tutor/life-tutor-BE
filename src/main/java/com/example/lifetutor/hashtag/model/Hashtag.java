@@ -1,6 +1,5 @@
 package com.example.lifetutor.hashtag.model;
 
-import com.example.lifetutor.post.model.Post;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,5 +17,8 @@ public class Hashtag {
     @Column(unique = true)
     private String hashtag;
 
+    public Hashtag(String hashtag) {
+        this.hashtag = hashtag;
+    }
 }
 
