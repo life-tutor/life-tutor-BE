@@ -1,5 +1,6 @@
 package com.example.lifetutor.post.service;
 
+import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
@@ -7,7 +8,8 @@ import com.example.lifetutor.hashtag.repository.HashtagRepository;
 import com.example.lifetutor.hashtag.repository.PostHashtagRepository;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
-import com.example.lifetutor.post.dto.response.Content;
+import com.example.lifetutor.post.dto.response.CommentDto;
+import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
@@ -23,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PostService {
@@ -49,7 +50,7 @@ public class PostService {
 
         List<Post> contents = posts.getContent();
 
-        List<Content> content = new ArrayList<>();
+        List<ContentDto> content = new ArrayList<>();
         for (Post p : contents) {
             Long postingId = p.getId();
             String nickname = p.getUser().getNickname();
@@ -77,7 +78,7 @@ public class PostService {
                 hashtags.add(ht.getHashtag());
             }
 
-            Content c = new Content(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike);
+            ContentDto c = new ContentDto(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike);
             content.add(c);
         }
         return new PostResponseDto(content, posts.isLast());
@@ -109,5 +110,67 @@ public class PostService {
         }
 
         postRepository.save(post);
+    }
+
+    @Transactional
+    public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
+
+        return null;
+    }
+
+    public ContentDto getPost(Long postingId, UserDetailsImpl userDetails) {
+        Post post = postRepository.findById(postingId).orElseThrow(
+                ()->new IllegalArgumentException("No search data."));
+
+        ContentDto contentDto = new ContentDto();
+
+        contentDto.setPosting_id(post.getId());
+        contentDto.setNickname(userDetails.getUser().getNickname());
+        contentDto.setTitle(post.getTitle());
+        contentDto.setDate(post.getDate());
+        contentDto.setPosting_content(post.getPosting_content());
+
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(post.getId());
+        List<String> hashtags = new ArrayList<>();
+
+        for (PostHashtag h : postHashtags) {
+            Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No search date"));
+            hashtags.add(ht.getHashtag());
+        }
+        contentDto.setHashtag(hashtags);
+
+        boolean isLike = false;
+        List<Likes> likes = post.getLikes();
+
+        int like_count = likes.size();
+
+        for (Likes l : likes) {
+            if (l.getUser().getId() == userDetails.getUser().getId()) {
+                isLike = true;
+                break;
+            }
+        }
+        contentDto.setLike_count(like_count);
+        contentDto.setLike(isLike);
+
+        List<Comment> comments = post.getComments();
+        List<CommentDto> commentDtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDto commentDto = new CommentDto();
+            commentDto.setId(comment.getId());
+            commentDto.setNickname((comment.getUser().getNickname()));
+            commentDto.setContent(comment.getContent());
+            commentDto.setDate(comment.getDate());
+            commentDto.setLike_count(comment.getLikes().size());
+            commentDto.setLike(commentDto.isLike());
+            commentDtos.add(commentDto);
+        }
+
+        contentDto.setComments(commentDtos);
+//        Content content = new Content(id, nickname, title, date, posting_content, hashtags, comments, like_count, isLike);
+
+
+        return contentDto;
     }
 }
