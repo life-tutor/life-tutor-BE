@@ -1,28 +1,45 @@
 package com.example.lifetutor.user.service;
 
 import com.example.lifetutor.config.security.UserDetailsServiceImpl;
+import com.example.lifetutor.hashtag.model.Hashtag;
+import com.example.lifetutor.hashtag.model.PostHashtag;
+import com.example.lifetutor.hashtag.repository.HashtagRepository;
+import com.example.lifetutor.hashtag.repository.PostHashtagRepository;
+import com.example.lifetutor.post.model.Post;
+import com.example.lifetutor.post.repository.PostRepository;
 import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
+import com.example.lifetutor.user.dto.response.ContentResponseDto;
 import com.example.lifetutor.user.dto.response.MyPageResponseDto;
+import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
 import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.repositroy.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
-
+    private final HashtagRepository hashtagRepository;
+    private final PostHashtagRepository postHashtagRepository;
     private final UserDetailsServiceImpl userDetailsService;
 
     //회원가입
@@ -52,10 +69,44 @@ public class UserService {
     public ResponseEntity<?> showMyInfo(User user) {
         String username = user.getUsername();
         String nickname = user.getNickname();
+        Role user_type = user.getUser_type();
 
-        MyPageResponseDto myPageResponseDto = new MyPageResponseDto(username, nickname);
+        MyPageResponseDto myPageResponseDto = new MyPageResponseDto(username, nickname,user_type);
 
         return new ResponseEntity<>(myPageResponseDto, HttpStatus.valueOf(200));
+    }
+
+    public ShowMyPostsResponseDto showMyPosts(int page , int size, User user) {
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "date");
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Post> posts = postRepository.findAllByUser(pageable,user);
+
+        List<Post> postList = posts.getContent();
+
+        List<ContentResponseDto> contentResponseDtos = new ArrayList<>();
+        for(Post post : postList) {
+            Long postingId = post.getId();
+            String nickname = post.getUser().getNickname();
+            String title = post.getTitle();
+            LocalDateTime date = post.getDate();
+            String content = post.getPosting_content();
+            List<PostHashtag> hashtag = postHashtagRepository.findAllByPostId(post.getId());
+            int comment_count = post.getComments().size();
+            int like_count = post.getLikes().size();
+
+            List<String> hashtags = new ArrayList<>();
+
+            for(PostHashtag postHashtag : hashtag) {
+                Hashtag hashtag1 = hashtagRepository.findById(postHashtag.getHashtag().getId()).get();
+                hashtags.add(hashtag1.getHashtag());
+            }
+
+            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId,nickname,title,date,content,hashtags,comment_count,like_count);
+            contentResponseDtos.add(contentResponseDto);
+        }
+        return new ShowMyPostsResponseDto(contentResponseDtos,posts.isLast());
     }
 
     public void checkEmail(String username) {
