@@ -2,7 +2,9 @@ package com.example.lifetutor.user.service;
 
 import com.example.lifetutor.config.security.UserDetailsServiceImpl;
 import com.example.lifetutor.hashtag.model.Hashtag;
+import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
+import com.example.lifetutor.hashtag.repository.PostHashtagRepository;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
 import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
@@ -25,7 +27,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,7 +39,7 @@ public class UserService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
     private final HashtagRepository hashtagRepository;
-
+    private final PostHashtagRepository postHashtagRepository;
     private final UserDetailsServiceImpl userDetailsService;
 
     //회원가입
@@ -88,14 +90,16 @@ public class UserService {
             Long postingId = post.getId();
             String nickname = post.getUser().getNickname();
             String title = post.getTitle();
-            LocalDate date = post.getDate();
+            LocalDateTime date = post.getDate();
             String content = post.getPosting_content();
-            List<Hashtag> hashtag = hashtagRepository.findAllByPostId(post.getId());
+            List<PostHashtag> hashtag = postHashtagRepository.findAllByPostId(post.getId());
             int comment_count = post.getComments().size();
             int like_count = post.getLikes().size();
 
             List<String> hashtags = new ArrayList<>();
-            for(Hashtag hashtag1 : hashtag) {
+
+            for(PostHashtag postHashtag : hashtag) {
+                Hashtag hashtag1 = hashtagRepository.findById(postHashtag.getHashtag().getId()).get();
                 hashtags.add(hashtag1.getHashtag());
             }
 
