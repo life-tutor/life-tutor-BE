@@ -30,8 +30,6 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         Map<String, Object> kakao_account = (Map<String, Object>) oAuth2User.getAttributes().get("kakao_account");
         String username = (String) kakao_account.get("email");
-        Map<String, Object> properties = (Map<String, Object>) oAuth2User.getAttributes().get("properties");
-        String nickname = (String) properties.get("nickname");
         User user =  userRepository.findByUsername(username).get();
 
         String jwt = JwtTokenUtils.generateJwtToken(new UserDetailsImpl(user));
@@ -48,7 +46,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     }
 
     private String makeRedirectUrl(String token) {
-        return UriComponentsBuilder.fromUriString("http://testalice123.s3-website.ap-northeast-2.amazonaws.com/oauth2/redirect/"+token)
+        return UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/redirect/"+token)
                 .build().toUriString();
     }
 }

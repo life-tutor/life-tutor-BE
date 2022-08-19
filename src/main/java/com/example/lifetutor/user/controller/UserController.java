@@ -4,9 +4,11 @@ import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
+import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +35,9 @@ public class UserController {
     }
 
     @GetMapping("mypage/postings")
-    public void showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ShowMyPostsResponseDto showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
+        return userService.showMyPosts(page,size,user);
     }
 
     //이메일 중복 체크

@@ -1,9 +1,11 @@
 package com.example.lifetutor.config.security.oauth2;
 
+import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.repositroy.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
@@ -28,16 +30,18 @@ public class UserOAuth2Service extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
+        System.out.println(attributes);
+
         Map<String, Object> kakao_account = (Map<String, Object>) attributes.get("kakao_account");
         String username = (String) kakao_account.get("email");
 
-        Map<String, Object> properties = (Map<String, Object>) attributes.get("properties");
-        String nickname = (String) properties.get("nickname");
+        if(username == null) {
+            throw new AuthenticationException("이메일 제공을 동의해주세요"){};
+        }
 
-        if(!userRepository.existsByUsername(username)) {
-            User user = new User(nickname,username, UUID.randomUUID().toString());
-        } else {
-            System.out.println("이미 가입된 계정입니다.");
+        if (!userRepository.findByUsername(username).isPresent()) {
+            User user = new User(username, "User" + Math.random()*1000000000, UUID.randomUUID().toString(), Role.SEEKER);
+            userRepository.save(user);
         }
 
         return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority("ROLE_MEMBER")), attributes, "id");

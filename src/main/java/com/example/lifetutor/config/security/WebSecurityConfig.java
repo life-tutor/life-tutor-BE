@@ -3,6 +3,7 @@ package com.example.lifetutor.config.security;
 import com.example.lifetutor.config.security.filter.FormLoginFilter;
 import com.example.lifetutor.config.security.filter.JwtAuthFilter;
 import com.example.lifetutor.config.security.jwt.HeaderTokenExtractor;
+import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationFailureHandler;
 import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.example.lifetutor.config.security.oauth2.UserOAuth2Service;
 import com.example.lifetutor.config.security.provider.FormLoginAuthProvider;
@@ -25,7 +26,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -41,7 +47,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@EnableWebSecurity // 스프링 Security 지원을 가능하게 함
+@EnableWebSecurity(debug = false) // 스프링 Security 지원을 가능하게 함
 @EnableGlobalMethodSecurity(securedEnabled = true) // @Secured 어노테이션 활성화
 @AllArgsConstructor
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -50,7 +56,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final HeaderTokenExtractor headerTokenExtractor;
     private final UserOAuth2Service userOAuth2Service;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
+
+
+
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest>
+    authorizationRequestRepository() {
+
+        return new HttpSessionOAuth2AuthorizationRequestRepository();
+    }
 
     @Bean
     public BCryptPasswordEncoder encodePassword() {
@@ -83,7 +99,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .oauth2Login()
                 .defaultSuccessUrl("/")
+                .failureUrl("/")
                 .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
                 .userInfoEndpoint()
                 .userService(userOAuth2Service);
         /*
@@ -108,6 +126,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 // css 폴더를 login 없이 허용
                 .antMatchers("/css/**").permitAll()
 // 회원 관리 처리 API 전부를 login 없이 허용
+
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/signup").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/login").permitAll()
@@ -117,6 +136,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/join").permitAll()
                 .antMatchers(HttpMethod.GET, "/post/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/post").permitAll()
+                .antMatchers(HttpMethod.GET,"/api/**").permitAll()
+                .antMatchers(HttpMethod.POST ,"/api/signup").permitAll()
+                .antMatchers(HttpMethod.POST,"/api/login").permitAll()
+                .antMatchers(HttpMethod.GET,"/api/users/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/").permitAll()
+                .antMatchers(HttpMethod.GET,"/login").permitAll()
+                .antMatchers(HttpMethod.GET,"/join").permitAll()
+                .antMatchers(HttpMethod.GET,"/post/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/post").permitAll()
+                .antMatchers(HttpMethod.POST,"/login/oauth2/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/login/oauth2/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/oauth2/redirect/**").permitAll()
 // 그 외 어떤 요청이든 '인증'
                 .anyRequest().authenticated()
                 .and()
@@ -175,6 +206,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("GET,/api/posts");
         skipPathList.add("GET,/api/post/**");
         skipPathList.add("GET,/api/comment/**");
+        skipPathList.add("GET,/login/oauth2/**");
+        skipPathList.add("POST,/login/oauth2/**");
 
         skipPathList.add("GET,/");
         skipPathList.add("GET,/login");
@@ -182,6 +215,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("GET,/post/**");
 //        skipPathList.add("GET,/api/main/**");
         skipPathList.add("GET,/post");
+        skipPathList.add("GET,/api/oauth2/redirect/**");
 
         FilterSkipMatcher matcher = new FilterSkipMatcher(
                 skipPathList,
@@ -245,7 +279,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.setCharacterEncoding("UTF-8");
 
-            objectMapper.writeValue(response.getWriter(), authException.getMessage());
+            objectMapper.writeValue(response.getWriter(), authException.getMessage() + "test");
         }
-    }
+
+
+  }
 }
+
+
