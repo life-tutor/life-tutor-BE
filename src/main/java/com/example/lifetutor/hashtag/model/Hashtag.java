@@ -15,15 +15,8 @@ public class Hashtag {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
-
-    @Column(nullable = false)
+    @Column(unique = true)
     private String hashtag;
 
-    public Hashtag(Post post, String hashtag) {
-        this.post = post;
-        this.hashtag = hashtag;
-    }
 }
+
