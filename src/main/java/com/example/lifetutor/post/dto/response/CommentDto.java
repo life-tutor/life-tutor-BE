@@ -1,5 +1,6 @@
 package com.example.lifetutor.post.dto.response;
 
+import com.example.lifetutor.user.model.Role;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,4 +17,5 @@ public class CommentDto {
     private LocalDateTime date;
     private int like_count;
     private boolean isLike;
+    private Role user_type;
 }

@@ -13,6 +13,7 @@ import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
+import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -78,7 +79,9 @@ public class PostService {
                 hashtags.add(ht.getHashtag());
             }
 
-            ContentDto c = new ContentDto(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike);
+            Role user_type = p.getUser().getUser_type();
+
+            ContentDto c = new ContentDto(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike, user_type);
             content.add(c);
         }
         return new PostResponseDto(content, posts.isLast());
@@ -164,11 +167,12 @@ public class PostService {
             commentDto.setDate(comment.getDate());
             commentDto.setLike_count(comment.getLikes().size());
             commentDto.setLike(commentDto.isLike());
+            commentDto.setUser_type(comment.getUser().getUser_type());
             commentDtos.add(commentDto);
         }
 
         contentDto.setComments(commentDtos);
-//        Content content = new Content(id, nickname, title, date, posting_content, hashtags, comments, like_count, isLike);
+        contentDto.setUser_type(post.getUser().getUser_type());
 
 
         return contentDto;
