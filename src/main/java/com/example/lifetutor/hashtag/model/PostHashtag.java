@@ -19,7 +19,7 @@ public class PostHashtag {
     @JoinColumn(name = "post_id")
     private Post post;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "hashtag_id")
     private Hashtag hashtag;
 

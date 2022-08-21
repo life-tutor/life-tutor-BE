@@ -45,4 +45,9 @@ public class PostController {
     public ContentDto getPost(@PathVariable Long postingId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return postService.getPost(postingId, userDetails);
     }
+
+    @PutMapping("/api/board/{postingId}")
+    public void editPost(@RequestBody PostRequestDto postRequestDto, @PathVariable Long postingId) {
+        postService.editPost(postRequestDto, postingId);
+    }
 }

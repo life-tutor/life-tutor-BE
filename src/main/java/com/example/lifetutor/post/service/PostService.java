@@ -109,7 +109,6 @@ public class PostService {
                 PostHashtag postHashtag = new PostHashtag(post, ht);
                 postHashtagRepository.save(postHashtag);
             }
-
         }
 
         postRepository.save(post);
@@ -117,6 +116,19 @@ public class PostService {
 
     @Transactional
     public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
+
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "id");
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        String[] hashtags = hashtag.split(",");
+
+        List<Long> hashtagIds = new ArrayList<>();
+        for (String s : hashtags) {
+//            hashtagIds.add(hashtagRepository.findByHashtag(s));
+        }
+//        Page<Post> posts = postRepository.findAllBy(pageable);
+
 
         return null;
     }
@@ -176,5 +188,30 @@ public class PostService {
 
 
         return contentDto;
+    }
+
+    @Transactional
+    public void editPost(PostRequestDto postRequestDto, Long postingId) {
+        Post post = postRepository.findById(postingId).orElseThrow(()-> new IllegalArgumentException("No search Data."));
+
+        post.setTitle(postRequestDto.getTitle());
+        post.setPosting_content(postRequestDto.getPosting_content());
+
+        List<String> hashtag = postRequestDto.getHashtag();
+        postHashtagRepository.deleteByPostId(postingId);
+        for (String s : hashtag) {
+            Hashtag ht = hashtagRepository.findByHashtag(s);
+            if (ht == null) {
+                Hashtag enrollmentHt = new Hashtag(s);
+                PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
+                hashtagRepository.save(enrollmentHt);
+                postHashtagRepository.save(postHashtag);
+            } else {
+                PostHashtag postHashtag = new PostHashtag(post, ht);
+                postHashtagRepository.save(postHashtag);
+            }
+        }
+
+        postRepository.save(post);
     }
 }
