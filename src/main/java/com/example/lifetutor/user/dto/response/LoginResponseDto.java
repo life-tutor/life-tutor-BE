@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 public class LoginResponseDto {
     String token;
 
+    String refreshToken;
+
     String username;
 
     String nickname;

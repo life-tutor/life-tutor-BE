@@ -5,6 +5,7 @@ import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
 import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
+import com.example.lifetutor.user.dto.response.TokenResponse;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/api/")
@@ -35,7 +38,7 @@ public class UserController {
     }
 
     @GetMapping("mypage/postings")
-    public ShowMyPostsResponseDto showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<ShowMyPostsResponseDto> showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return userService.showMyPosts(page,size,user);
     }
@@ -64,5 +67,10 @@ public class UserController {
     public ResponseEntity<?> leaveUser(@RequestBody LeaveUserRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return userService.leaveUser(requestDto,user);
+    }
+
+    @PutMapping("/refreshToken")
+    public ResponseEntity<?> reIssueRefreshToken(HttpServletRequest request) {
+        return userService.reIssueRefreshToken(request);
     }
 }

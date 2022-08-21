@@ -1,6 +1,5 @@
 package com.example.lifetutor.config.security.oauth2;
 
-import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.config.security.jwt.JwtTokenUtils;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.repositroy.UserRepository;
@@ -32,7 +31,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String username = (String) kakao_account.get("email");
         User user =  userRepository.findByUsername(username).get();
 
-        String jwt = JwtTokenUtils.generateJwtToken(new UserDetailsImpl(user));
+        String jwt = JwtTokenUtils.generateJwtToken(username);
 
         String url = makeRedirectUrl(jwt);
 
