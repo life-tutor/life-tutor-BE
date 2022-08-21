@@ -1,6 +1,7 @@
 package com.example.lifetutor.post.model;
 
 import com.example.lifetutor.comment.model.Comment;
+import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;

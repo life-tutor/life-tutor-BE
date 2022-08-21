@@ -50,4 +50,9 @@ public class PostController {
     public void editPost(@RequestBody PostRequestDto postRequestDto, @PathVariable Long postingId) {
         postService.editPost(postRequestDto, postingId);
     }
+
+    @DeleteMapping("/api/board/{postingId}")
+    public void editPost(@PathVariable Long postingId) {
+        postService.deletePost(postingId);
+    }
 }
