@@ -1,6 +1,8 @@
 package com.example.lifetutor.user.service;
 
-import com.example.lifetutor.config.security.UserDetailsServiceImpl;
+import com.example.lifetutor.config.security.jwt.HeaderTokenExtractor;
+import com.example.lifetutor.config.security.jwt.JwtDecoder;
+import com.example.lifetutor.config.security.jwt.JwtTokenUtils;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
@@ -13,8 +15,10 @@ import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
 import com.example.lifetutor.user.dto.response.ContentResponseDto;
 import com.example.lifetutor.user.dto.response.MyPageResponseDto;
 import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
+import com.example.lifetutor.user.model.Auth;
 import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
+import com.example.lifetutor.user.repositroy.AuthRepository;
 import com.example.lifetutor.user.repositroy.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -26,6 +30,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +45,10 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
-    private final UserDetailsServiceImpl userDetailsService;
+    private final AuthRepository authRepository;
+    private final JwtTokenUtils jwtTokenUtils;
+    private final JwtDecoder jwtDecoder;
+    private final HeaderTokenExtractor extractor;
 
     //회원가입
     public ResponseEntity<?> registerUser(SignupRequestDto signupRequestDto) {
@@ -71,22 +79,22 @@ public class UserService {
         String nickname = user.getNickname();
         Role user_type = user.getUser_type();
 
-        MyPageResponseDto myPageResponseDto = new MyPageResponseDto(username, nickname,user_type);
+        MyPageResponseDto myPageResponseDto = new MyPageResponseDto(username, nickname, user_type);
 
         return new ResponseEntity<>(myPageResponseDto, HttpStatus.valueOf(200));
     }
 
-    public ShowMyPostsResponseDto showMyPosts(int page , int size, User user) {
+    public ResponseEntity<ShowMyPostsResponseDto> showMyPosts(int page, int size, User user) {
         Sort.Direction direction = Sort.Direction.DESC;
         Sort sort = Sort.by(direction, "date");
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Post> posts = postRepository.findAllByUser(pageable,user);
+        Page<Post> posts = postRepository.findAllByUser(pageable, user);
 
         List<Post> postList = posts.getContent();
 
         List<ContentResponseDto> contentResponseDtos = new ArrayList<>();
-        for(Post post : postList) {
+        for (Post post : postList) {
             Long postingId = post.getId();
             String nickname = post.getUser().getNickname();
             String title = post.getTitle();
@@ -98,15 +106,16 @@ public class UserService {
 
             List<String> hashtags = new ArrayList<>();
 
-            for(PostHashtag postHashtag : hashtag) {
+            for (PostHashtag postHashtag : hashtag) {
                 Hashtag hashtag1 = hashtagRepository.findById(postHashtag.getHashtag().getId()).get();
                 hashtags.add(hashtag1.getHashtag());
             }
 
-            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId,nickname,title,date,content,hashtags,comment_count,like_count);
+            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId, nickname, title, date, content, hashtags, comment_count, like_count);
             contentResponseDtos.add(contentResponseDto);
         }
-        return new ShowMyPostsResponseDto(contentResponseDtos,posts.isLast());
+        ShowMyPostsResponseDto showMyPostsResponseDto = new ShowMyPostsResponseDto(contentResponseDtos, posts.isLast());
+        return new ResponseEntity<>(showMyPostsResponseDto, HttpStatus.valueOf(200));
     }
 
     public void checkEmail(String username) {
@@ -125,10 +134,10 @@ public class UserService {
         if (!requestDto.getPassword().equals(requestDto.getCheckPassword()))
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
 
-        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword()))
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
 
-        if(userRepository.existsByNickname(requestDto.getNickname()))
+        if (userRepository.existsByNickname(requestDto.getNickname()))
             return new ResponseEntity<>("닉네임이 중복됩니다.", HttpStatus.valueOf(400));
 
         user.updateMyInfo(requestDto);
@@ -140,14 +149,42 @@ public class UserService {
 
 
     public ResponseEntity<?> leaveUser(LeaveUserRequestDto requestDto, User user) {
-        if(!requestDto.getPassword().equals(requestDto.getCheckPassword()))
+        if (!requestDto.getPassword().equals(requestDto.getCheckPassword()))
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
 
-        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
+        if (!passwordEncoder.matches(requestDto.getPassword(), user.getPassword()))
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
-        
+
         userRepository.delete(user);
 
         return new ResponseEntity<>("탈퇴가 완료 되었습니다.", HttpStatus.valueOf(200));
+    }
+
+    @Transactional
+    public ResponseEntity<?> reIssueRefreshToken(HttpServletRequest request) {
+        String accessToken = extractor.extract(request.getHeader("Authorization"), request);
+
+        String refreshToken = request.getHeader("RefreshToken");
+
+        String username = jwtDecoder.decodeUserToken(accessToken);
+
+        Optional<Auth> findUserRefreshToken = authRepository.findByUsername(username);
+        String token = null;
+        if (findUserRefreshToken.isPresent()) {
+            if (findUserRefreshToken.get().getRefreshToken().equals(refreshToken)) {
+                if (jwtDecoder.isExpiredToken(refreshToken)) {
+                    return new ResponseEntity<>("만료된 리프레쉬 토큰입니다.", HttpStatus.valueOf(401));
+                } else {
+                // 새로운 엑세스 토큰 발급
+                    token = JwtTokenUtils.generateJwtToken(username);
+                // 접속 유저의 엑세스 토큰 업데이트
+                }
+            } else {
+                return new ResponseEntity<>("저장된 리프레쉬 토큰과 일치하지 않습니다.", HttpStatus.valueOf(401));
+            }
+        } else {
+            return new ResponseEntity<>("존재하지 않는 리프레쉬 토큰입니다.", HttpStatus.valueOf(401));
+        }
+        return ResponseEntity.ok().header("Authorization","BEARER " + token).body("토큰 재발급");
     }
 }

@@ -3,11 +3,13 @@ package com.example.lifetutor.config.security;
 import com.example.lifetutor.config.security.filter.FormLoginFilter;
 import com.example.lifetutor.config.security.filter.JwtAuthFilter;
 import com.example.lifetutor.config.security.jwt.HeaderTokenExtractor;
+import com.example.lifetutor.config.security.jwt.JwtDecoder;
 import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationFailureHandler;
 import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.example.lifetutor.config.security.oauth2.UserOAuth2Service;
 import com.example.lifetutor.config.security.provider.FormLoginAuthProvider;
 import com.example.lifetutor.config.security.provider.JWTAuthProvider;
+import com.example.lifetutor.user.repositroy.AuthRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,10 +30,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.AuthenticationEntryPoint;
-import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -57,6 +57,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserOAuth2Service userOAuth2Service;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final AuthRepository authRepository;
+    private final JwtDecoder jwtDecoder;
 
 
 
@@ -128,6 +130,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 // 회원 관리 처리 API 전부를 login 없이 허용
 
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/refreshToken").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/signup").permitAll()
                 .antMatchers(HttpMethod.POST, "/api/login").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/users/**").permitAll()
@@ -179,7 +182,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public FormLoginSuccessHandler formLoginSuccessHandler() {
-        return new FormLoginSuccessHandler();
+        return new FormLoginSuccessHandler(authRepository);
     }
 
     @Bean
@@ -202,6 +205,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("POST,/api/signup");
         skipPathList.add("POST,/api/login");
         skipPathList.add("GET,/api/users/**");
+        skipPathList.add("PUT,/api/refreshToken");
         //전체 게시글 조회
         skipPathList.add("GET,/api/posts");
         skipPathList.add("GET,/api/post/**");
@@ -224,7 +228,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         JwtAuthFilter filter = new JwtAuthFilter(
                 matcher,
-                headerTokenExtractor
+                headerTokenExtractor,
+                jwtDecoder
         );
         filter.setAuthenticationManager(super.authenticationManagerBean());
 

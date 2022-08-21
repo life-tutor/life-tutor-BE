@@ -58,4 +58,27 @@ public class JwtDecoder {
 
         return Optional.ofNullable(jwt);
     }
+
+    public boolean isExpiredToken(String token){
+        DecodedJWT decodedJWT = isValidToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "유효한 토큰이 아닙니다"));
+
+        Date expiredDate = decodedJWT
+                .getClaim(CLAIM_EXPIRED_DATE)
+                .asDate();
+
+        Date now = new Date();
+
+        return expiredDate.before(now);
+    }
+
+    public String decodeUserToken(String accessToken) {
+        DecodedJWT decodedJWT = isValidToken(accessToken).get(); //유효한 토큰 아니다 해줘야함.
+
+        String username = decodedJWT
+                .getClaim(CLAIM_USER_NAME)
+                .asString();
+
+        return username;
+    }
 }
