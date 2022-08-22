@@ -76,17 +76,17 @@ public class UserService {
         return new ResponseEntity<>(myPageResponseDto, HttpStatus.valueOf(200));
     }
 
-    public ShowMyPostsResponseDto showMyPosts(int page , int size, User user) {
+    public ResponseEntity<ShowMyPostsResponseDto> showMyPosts(int page, int size, User user) {
         Sort.Direction direction = Sort.Direction.DESC;
         Sort sort = Sort.by(direction, "date");
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Post> posts = postRepository.findAllByUser(pageable,user);
+        Page<Post> posts = postRepository.findAllByUser(pageable, user);
 
         List<Post> postList = posts.getContent();
 
         List<ContentResponseDto> contentResponseDtos = new ArrayList<>();
-        for(Post post : postList) {
+        for (Post post : postList) {
             Long postingId = post.getId();
             String nickname = post.getUser().getNickname();
             String title = post.getTitle();
@@ -98,15 +98,16 @@ public class UserService {
 
             List<String> hashtags = new ArrayList<>();
 
-            for(PostHashtag postHashtag : hashtag) {
+            for (PostHashtag postHashtag : hashtag) {
                 Hashtag hashtag1 = hashtagRepository.findById(postHashtag.getHashtag().getId()).get();
                 hashtags.add(hashtag1.getHashtag());
             }
 
-            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId,nickname,title,date,content,hashtags,comment_count,like_count);
+            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId, nickname, title, date, content, hashtags, comment_count, like_count);
             contentResponseDtos.add(contentResponseDto);
         }
-        return new ShowMyPostsResponseDto(contentResponseDtos,posts.isLast());
+        ShowMyPostsResponseDto showMyPostsResponseDto = new ShowMyPostsResponseDto(contentResponseDtos, posts.isLast());
+        return new ResponseEntity<>(showMyPostsResponseDto, HttpStatus.valueOf(200));
     }
 
     public void checkEmail(String username) {

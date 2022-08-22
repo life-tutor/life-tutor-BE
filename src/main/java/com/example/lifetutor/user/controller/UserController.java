@@ -35,7 +35,7 @@ public class UserController {
     }
 
     @GetMapping("mypage/postings")
-    public ShowMyPostsResponseDto showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<ShowMyPostsResponseDto> showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return userService.showMyPosts(page,size,user);
     }
