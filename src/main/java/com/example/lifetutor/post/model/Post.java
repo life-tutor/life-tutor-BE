@@ -1,6 +1,7 @@
 package com.example.lifetutor.post.model;
 
 import com.example.lifetutor.comment.model.Comment;
+import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.user.model.User;
@@ -37,6 +38,12 @@ public class Post extends Timestamped {
 
     @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     private List<Comment> comments;
+
+    @OneToMany(mappedBy = "post")
+    private List<PostHashtag> postHashtags;
+
+//    @OneToMany(mappedBy = "post")
+//    private List<Hashtag> hashtags;
 
     public Post(User user, String title, String posting_content) {
         this.user = user;

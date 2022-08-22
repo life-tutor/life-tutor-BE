@@ -31,7 +31,7 @@ public class PostController {
         postService.registerPost(postRequestDto, userDetails);
     }
 
-    @GetMapping("/api/search/posting")
+    @GetMapping("/api/search/postings")
     public PostResponseDto searchHashtag(
             @RequestParam("hashtag") String hashtag,
             @RequestParam("page") int page,
