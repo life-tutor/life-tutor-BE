@@ -7,11 +7,11 @@ import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.model.Enter;
 import com.example.lifetutor.room.model.Room;
 import com.example.lifetutor.room.model.RoomHashtag;
+import com.example.lifetutor.room.repository.EnterRepository;
 import com.example.lifetutor.room.repository.RoomHashtagRepository;
 import com.example.lifetutor.room.repository.RoomRepository;
 import com.example.lifetutor.room.dto.response.ContentResponseDto;
 import com.example.lifetutor.user.model.User;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,12 +33,14 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final RoomHashtagRepository roomHashtagRepository;
     private final HashtagRepository hashtagRepository;
+    private final EnterRepository enterRepository;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, RoomHashtagRepository roomHashtagRepository, HashtagRepository hashtagRepository) {
+    public RoomService(RoomRepository roomRepository, RoomHashtagRepository roomHashtagRepository, HashtagRepository hashtagRepository, EnterRepository enterRepository) {
         this.roomRepository = roomRepository;
         this.roomHashtagRepository = roomHashtagRepository;
         this.hashtagRepository = hashtagRepository;
+        this.enterRepository = enterRepository;
     }
 
     // 채팅방 조회
@@ -59,9 +61,10 @@ public class RoomService {
     // 채팅방 생성
     public ResponseEntity<String> createRoom(RoomRequestDto requestDto, User user){
         isEmpty(requestDto);
-        Enter enter = new Enter(1);
-        Room room = new Room(requestDto,user,enter);
+        Room room = new Room(requestDto,user);
         roomRepository.save(room);
+        Enter enter = new Enter(user,room);
+        enterRepository.save(enter);
         if(!requestDto.getHashtag().isEmpty()){
             HashMap<String,Integer> map = new HashMap<>();
             int index = 0;
@@ -83,7 +86,7 @@ public class RoomService {
         // 작성자 확인
         room.validateUser(user);
         isEmpty(requestDto);
-        room.update(requestDto);
+        if(room.getEnters().size() == 1) room.update(requestDto);
         // 해쉬태그는 추가할 수도 있으므로 삭제 후 다시 작성
         if(!room.getHashtags().isEmpty()){
             for(RoomHashtag roomHashtag : room.getHashtags()){
@@ -97,16 +100,20 @@ public class RoomService {
         }
     }
 
-    // 채팅방 입장(인원 수정)
+    // 채팅방 입장
     public void enterRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
-        int amount = room.getEnter().getAmount();
-        if(!room.getUser().getUsername().equals(user.getUsername())){
-            if(amount < 2){
-                room.getEnter().update(2);
-            }
-            else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
-        }
+        List<Enter> enters = room.getEnters();
+        if (enters.size() < 2) checkHost(room, user, "enter");
+        else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
+    }
+
+    // 채팅방 퇴장
+    public void exitRoom(Long room_id, User user){
+        Room room = foundRoom(room_id);
+        String host = room.getUser().getUsername();
+        checkHost(room,user,"exit");
+        if(host.equals(user.getUsername())) deleteRoom(room_id,user);
     }
 
     // 채팅방 삭제
@@ -155,5 +162,20 @@ public class RoomService {
     }
     public void notSearch(String hashtag){
         if(hashtag.isEmpty()) throw new IllegalArgumentException("검색어를 입력해주세요.");
+    }
+    // 채팅방 host 확인
+    public void checkHost(Room room, User user, String check){
+        String host = room.getUser().getUsername();
+        String guest = user.getUsername();
+        if(!host.equals(guest)){
+            if(check.equals("enter")){
+                Enter newEnter = new Enter(user,room);
+                enterRepository.save(newEnter);
+            }
+            if(check.equals("exit")){
+                Enter exitUser = enterRepository.findByUser(user);
+                enterRepository.delete(exitUser);
+            }
+        }
     }
 }

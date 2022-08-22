@@ -22,7 +22,7 @@ public class ContentResponseDto {
         this.nickname = room.getUser().getNickname();
         this.user_type = room.getUser().getUser_type();
         this.title = room.getTitle();
-        this.isfull = room.getEnter().getAmount() >= 2;
+        this.isfull = room.getEnters().size() >= 2;
         this.hashtag = hashtag;
     }
 }
