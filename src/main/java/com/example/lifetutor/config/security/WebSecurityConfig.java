@@ -216,6 +216,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //        skipPathList.add("GET,/api/main/**");
         skipPathList.add("GET,/post");
         skipPathList.add("GET,/api/oauth2/redirect/**");
+        // websocket 허용
+        skipPathList.add("GET,/iting/**");
 
         FilterSkipMatcher matcher = new FilterSkipMatcher(
                 skipPathList,
