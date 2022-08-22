@@ -29,9 +29,9 @@ public class MessageService {
 //        Message msg = new Message(message,user,room);
 //        room.addMessage(msg);
         String nickname = message.getNickname();
+        log.info("enterType: "+message.getEnter());
         if(MessageRequestDto.Enter.ENTER.equals(message.getEnter())){
             message.setMessage(nickname + "님이 들어왔습니다.");
-            log.info("enter: "+message.getMessage());
         }
         String time = LocalTime.now().format(DateTimeFormatter.ofPattern("a hh:mm").withLocale(Locale.KOREA));
         MessageResponseDto result = new MessageResponseDto(time,message);
