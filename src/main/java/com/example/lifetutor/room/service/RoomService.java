@@ -101,7 +101,7 @@ public class RoomService {
     public void enterRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
         int amount = room.getEnter().getAmount();
-        if(!room.getUser().getId().equals(user.getId())){
+        if(!room.getUser().getUsername().equals(user.getUsername())){
             if(amount < 2){
                 room.getEnter().update(2);
             }
