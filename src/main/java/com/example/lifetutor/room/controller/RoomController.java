@@ -48,17 +48,24 @@ public class RoomController {
         return new ResponseEntity<>("수정 성공",HttpStatus.OK);
     }
 
-    // 채팅방 입장(인원 수정)
-    @PutMapping("/chat/room/{room_id}/enter")
+    // 채팅방 입장
+    @PostMapping("/chat/room/{room_id}/enter")
     public ResponseEntity<String> enterRoom(@PathVariable Long room_id, @AuthenticationPrincipal UserDetailsImpl user){
         roomService.enterRoom(room_id, user.getUser());
         return new ResponseEntity<>(user.getUser().getNickname(),HttpStatus.OK);
     }
 
-    // 채팅방 삭제
-    @DeleteMapping("/chat/room/{room_id}")
-    public ResponseEntity<String> deleteRoom(@PathVariable Long room_id, @AuthenticationPrincipal UserDetailsImpl user){
-        roomService.deleteRoom(room_id,user.getUser());
-        return new ResponseEntity<>("삭제 성공",HttpStatus.OK);
+    // 채팅방 퇴장
+    @DeleteMapping("/chat/room/{room_id}/exit")
+    public ResponseEntity<String> exitRoom(@PathVariable Long room_id, @AuthenticationPrincipal UserDetailsImpl user){
+        roomService.exitRoom(room_id,user.getUser());
+        return new ResponseEntity<>("퇴장",HttpStatus.OK);
     }
+
+    // 채팅방 삭제
+//    @DeleteMapping("/chat/room/{room_id}")
+//    public ResponseEntity<String> deleteRoom(@PathVariable Long room_id, @AuthenticationPrincipal UserDetailsImpl user){
+//        roomService.deleteRoom(room_id,user.getUser());
+//        return new ResponseEntity<>("삭제 성공",HttpStatus.OK);
+//    }
 }
