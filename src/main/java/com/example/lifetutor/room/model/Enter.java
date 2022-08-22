@@ -1,26 +1,29 @@
 package com.example.lifetutor.room.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import com.example.lifetutor.user.model.User;
+
+import javax.persistence.*;
 
 @Entity
 public class Enter {
     @Id @GeneratedValue
     private Long id;
 
-    private int amount;
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="USER_ID", nullable = false)
+    private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="ROOM_ID", nullable = false)
+    private Room room;
 
     public Enter(){}
-    public Enter(int amount){
-        this.amount = amount;
+    public Enter(User user, Room room){
+        this.user = user;
+        this.room = room;
     }
 
-    public int getAmount() {
-        return amount;
-    }
-
-    public void update(int amount){
-        this.amount = amount;
+    public User getUser() {
+        return user;
     }
 }
