@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
@@ -179,6 +180,7 @@ public class PostService {
         return new PostResponseDto(content, posts.isLast());
     }
 
+    @Transactional
     public ContentDto getPost(Long postingId, UserDetailsImpl userDetails) {
         Post post = postRepository.findById(postingId).orElseThrow(
                 ()->new IllegalArgumentException("No search data."));
@@ -244,20 +246,23 @@ public class PostService {
         post.setPosting_content(postRequestDto.getPosting_content());
 
         List<String> hashtag = postRequestDto.getHashtag();
-        postHashtagRepository.deleteByPostId(postingId);
-        for (String s : hashtag) {
-            Hashtag ht = hashtagRepository.findByHashtag(s);
-            if (ht == null) {
-                Hashtag enrollmentHt = new Hashtag(s);
-                PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
-                hashtagRepository.save(enrollmentHt);
-                postHashtagRepository.save(postHashtag);
-            } else {
-                PostHashtag postHashtag = new PostHashtag(post, ht);
-                postHashtagRepository.save(postHashtag);
+        if (!(hashtag==null)) {
+            postHashtagRepository.deleteByPostId(postingId);
+            for (String s : hashtag) {
+                Hashtag ht = hashtagRepository.findByHashtag(s);
+                if (ht == null) {
+                    Hashtag enrollmentHt = new Hashtag(s);
+                    PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
+                    hashtagRepository.save(enrollmentHt);
+                    postHashtagRepository.save(postHashtag);
+                } else {
+                    PostHashtag postHashtag = new PostHashtag(post, ht);
+                    postHashtagRepository.save(postHashtag);
+                }
             }
+        } else {
+            postHashtagRepository.deleteByPostId(postingId);
         }
-
         postRepository.save(post);
     }
 
