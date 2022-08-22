@@ -19,18 +19,16 @@ public class Room {
     @Column(nullable = false)
     private String title;
 
-    @OneToOne(fetch = FetchType.LAZY,optional = false,cascade = CascadeType.ALL)
-    @JoinColumn(name="ENTER_ID", nullable = false)
-    private Enter enter;
+    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    private List<Enter> enters;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private List<RoomHashtag> hashtags;
 
     public Room(){}
-    public Room(RoomRequestDto requestDto, User user, Enter enter) {
+    public Room(RoomRequestDto requestDto, User user) {
         this.title = requestDto.getTitle();
         this.user = user;
-        this.enter = enter;
     }
 
     public Long getId() {
@@ -49,8 +47,8 @@ public class Room {
         return hashtags;
     }
 
-    public Enter getEnter() {
-        return enter;
+    public List<Enter> getEnters() {
+        return enters;
     }
 
     public void update(RoomRequestDto requestDto){
