@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Slf4j
 @Transactional
@@ -31,7 +32,7 @@ public class MessageService {
         if(MessageRequestDto.Enter.ENTER.equals(message.getEnter())){
             message.setMessage(nickname + "님이 들어왔습니다.");
         }
-        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("a hh:mm"));
+        String time = LocalTime.now().format(DateTimeFormatter.ofPattern("a hh:mm").withLocale(Locale.KOREA));
         MessageResponseDto result = new MessageResponseDto(time,message);
         sendingOperations.convertAndSend("/api/sub/" + room_id, result);
     }
