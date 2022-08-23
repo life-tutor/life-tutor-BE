@@ -1,5 +1,7 @@
 package com.example.lifetutor.post.service;
 
+import com.example.lifetutor.comment.model.Comment;
+import com.example.lifetutor.commentLikes.model.CommentLikes;
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
@@ -7,10 +9,12 @@ import com.example.lifetutor.hashtag.repository.HashtagRepository;
 import com.example.lifetutor.hashtag.repository.PostHashtagRepository;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
-import com.example.lifetutor.post.dto.response.Content;
+import com.example.lifetutor.post.dto.response.CommentDto;
+import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
+import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PostService {
@@ -49,7 +53,169 @@ public class PostService {
 
         List<Post> contents = posts.getContent();
 
-        List<Content> content = new ArrayList<>();
+        List<ContentDto> content = getContents(userDetails, contents);
+        return new PostResponseDto(content, posts.isLast());
+    }
+
+    @Transactional
+    public void registerPost(PostRequestDto postRequestDto, UserDetailsImpl userDetails) {
+        String title = postRequestDto.getTitle();
+        String posting_content = postRequestDto.getPosting_content();
+//        String imgUrl = postRequestDto.getImgUrl();
+        List<String> hashtag = postRequestDto.getHashtag();
+
+
+        User user = userDetails.getUser();
+        Post post = new Post(user, title, posting_content);
+
+        for (String s : hashtag) {
+            Hashtag ht = hashtagRepository.findByHashtag(s);
+            if (ht == null) {
+                Hashtag enrollmentHt = new Hashtag(s);
+                PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
+                hashtagRepository.save(enrollmentHt);
+                postHashtagRepository.save(postHashtag);
+            } else {
+                PostHashtag postHashtag = new PostHashtag(post, ht);
+                postHashtagRepository.save(postHashtag);
+            }
+        }
+
+        postRepository.save(post);
+    }
+
+    @Transactional
+    public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
+
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "id");
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        String[] tags = hashtag.split(",");
+
+        HashSet<Long> postIds = new HashSet<>();
+        for (String s : tags) {
+            Hashtag tag = hashtagRepository.findByHashtag(s);
+            List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
+            for (int i = 0; i < postHashtags.size(); i++) {
+                PostHashtag postHashtag = postHashtags.get(i);
+                postIds.add(postHashtag.getPost().getId());
+            }
+        }
+        int i=0;
+        Long[] idArr = new Long[postIds.size()];
+        for (Long id : postIds) {
+            idArr[i] = id;
+            i++;
+        }
+
+        Page<Post> posts = postRepository.findAll(pageable, idArr);
+
+        List<Post> contents = posts.getContent();
+        List<ContentDto> content = getContents(userDetails, contents);
+
+        return new PostResponseDto(content, posts.isLast());
+    }
+
+    @Transactional
+    public ContentDto getPost(Long postingId, UserDetailsImpl userDetails) {
+        Post post = postRepository.findById(postingId).orElseThrow(
+                ()->new IllegalArgumentException("No search data."));
+
+        ContentDto contentDto = new ContentDto();
+
+        contentDto.setPosting_id(post.getId());
+        contentDto.setNickname(post.getUser().getNickname());
+        contentDto.setTitle(post.getTitle());
+        contentDto.setDate(post.getDate());
+        contentDto.setPosting_content(post.getPosting_content());
+
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(post.getId());
+        List<String> hashtags = new ArrayList<>();
+
+        for (PostHashtag h : postHashtags) {
+            Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No search date"));
+            hashtags.add(ht.getHashtag());
+        }
+        contentDto.setHashtag(hashtags);
+
+        boolean isLike = false;
+        List<Likes> likes = post.getLikes();
+
+        int like_count = likes.size();
+
+        for (Likes l : likes) {
+            if (l.getUser().getId() == userDetails.getUser().getId()) {
+                isLike = true;
+                break;
+            }
+        }
+        contentDto.setLike_count(like_count);
+        contentDto.setLike(isLike);
+
+        List<Comment> comments = post.getComments();
+        List<CommentDto> commentDtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDto commentDto = new CommentDto();
+            commentDto.setId(comment.getId());
+            commentDto.setNickname((comment.getUser().getNickname()));
+            commentDto.setContent(comment.getContent());
+            commentDto.setDate(comment.getDate());
+            commentDto.setLike_count(comment.getLikes().size());
+            List<CommentLikes> commentLikes = comment.getLikes();
+            for (CommentLikes commentLike : commentLikes) {
+                if (commentLike.getUser().getId() == userDetails.getUser().getId()) {
+                    commentDto.setLike(true);
+                    break;
+                } else commentDto.setLike(false);
+            }
+            commentDto.setUser_type(comment.getUser().getUser_type());
+            commentDtos.add(commentDto);
+        }
+
+        contentDto.setComments(commentDtos);
+        contentDto.setUser_type(post.getUser().getUser_type());
+
+
+        return contentDto;
+    }
+
+    @Transactional
+    public void editPost(PostRequestDto postRequestDto, Long postingId) {
+        Post post = postRepository.findById(postingId).orElseThrow(()-> new IllegalArgumentException("No search Data."));
+
+        post.setTitle(postRequestDto.getTitle());
+        post.setPosting_content(postRequestDto.getPosting_content());
+
+        List<String> hashtag = postRequestDto.getHashtag();
+        if (!(hashtag==null)) {
+            postHashtagRepository.deleteByPostId(postingId);
+            for (String s : hashtag) {
+                Hashtag ht = hashtagRepository.findByHashtag(s);
+                if (ht == null) {
+                    Hashtag enrollmentHt = new Hashtag(s);
+                    PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
+                    hashtagRepository.save(enrollmentHt);
+                    postHashtagRepository.save(postHashtag);
+                } else {
+                    PostHashtag postHashtag = new PostHashtag(post, ht);
+                    postHashtagRepository.save(postHashtag);
+                }
+            }
+        } else {
+            postHashtagRepository.deleteByPostId(postingId);
+        }
+        postRepository.save(post);
+    }
+
+    @Transactional
+    public void deletePost(Long postingId) {
+        postRepository.deleteById(postingId);
+    }
+
+    private List<ContentDto> getContents(UserDetailsImpl userDetails, List<Post> contents) {
+        List<ContentDto> content = new ArrayList<>();
         for (Post p : contents) {
             Long postingId = p.getId();
             String nickname = p.getUser().getNickname();
@@ -77,37 +243,11 @@ public class PostService {
                 hashtags.add(ht.getHashtag());
             }
 
-            Content c = new Content(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike);
+            Role user_type = p.getUser().getUser_type();
+
+            ContentDto c = new ContentDto(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike, user_type);
             content.add(c);
         }
-        return new PostResponseDto(content, posts.isLast());
-    }
-
-    @Transactional
-    public void registerPost(PostRequestDto postRequestDto, UserDetailsImpl userDetails) {
-        String title = postRequestDto.getTitle();
-        String posting_content = postRequestDto.getPosting_content();
-//        String imgUrl = postRequestDto.getImgUrl();
-        List<String> hashtag = postRequestDto.getHashtag();
-
-
-        User user = userDetails.getUser();
-        Post post = new Post(user, title, posting_content);
-
-        for (String s : hashtag) {
-            Hashtag ht = hashtagRepository.findByHashtag(s);
-            if (ht == null) {
-                Hashtag enrollmentHt = new Hashtag(s);
-                PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
-                hashtagRepository.save(enrollmentHt);
-                postHashtagRepository.save(postHashtag);
-            } else {
-                PostHashtag postHashtag = new PostHashtag(post, ht);
-                postHashtagRepository.save(postHashtag);
-            }
-
-        }
-
-        postRepository.save(post);
+        return content;
     }
 }

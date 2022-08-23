@@ -1,15 +1,17 @@
 package com.example.lifetutor.post.dto.response;
 
+import com.example.lifetutor.user.model.Role;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
 @Setter
-public class Content {
+@NoArgsConstructor
+public class ContentDto {
     private Long posting_id;
     private String nickname;
     private String title;
@@ -19,9 +21,11 @@ public class Content {
     private int comment_count;
     private int like_count;
     private boolean isLike;
+    private Role user_type;
     private List<String> hashtag;
+    private List<CommentDto> comments;
 
-    public Content(Long postingId, String nickname, String title, LocalDateTime date, String posting_content, List<String> hashtag, int comment_count, int like_count, boolean isLike) {
+    public ContentDto(Long postingId, String nickname, String title, LocalDateTime date, String posting_content, List<String> hashtag, int comment_count, int like_count, boolean isLike, Role user_type) {
         this.posting_id = postingId;
         this.nickname = nickname;
         this.title = title;
@@ -31,5 +35,6 @@ public class Content {
         this.comment_count = comment_count;
         this.like_count = like_count;
         this.isLike = isLike;
+        this.user_type = user_type;
     }
 }
