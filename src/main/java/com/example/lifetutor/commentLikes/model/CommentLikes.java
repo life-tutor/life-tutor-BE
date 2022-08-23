@@ -4,7 +4,6 @@ import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.user.model.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "COMMENTLIKES")
@@ -13,12 +12,12 @@ public class CommentLikes {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="USER_ID",nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="COMMENT_ID",nullable = false)
     private Comment comment;
 
     public Long getId() {

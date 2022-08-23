@@ -19,7 +19,7 @@ public class Room {
     @Column(nullable = false)
     private String title;
 
-    @OneToMany(fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "room", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Enter> enters;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
