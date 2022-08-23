@@ -10,6 +10,7 @@ import com.example.lifetutor.post.repository.PostRepository;
 import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
+import com.example.lifetutor.user.dto.request.UpdateMyPasswordRequestDto;
 import com.example.lifetutor.user.dto.response.ContentResponseDto;
 import com.example.lifetutor.user.dto.response.MyPageResponseDto;
 import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
@@ -59,7 +60,7 @@ public class UserService {
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
         }
 
-        User user = new User(username, nickname, passwordEncoder.encode(password), userType);
+        User user = new User(username, nickname, passwordEncoder.encode(password), userType,false);
 
         userRepository.save(user);
 
@@ -70,8 +71,9 @@ public class UserService {
         String username = user.getUsername();
         String nickname = user.getNickname();
         Role user_type = user.getUser_type();
+        boolean isKakao = user.isKakao();
 
-        MyPageResponseDto myPageResponseDto = new MyPageResponseDto(username, nickname,user_type);
+        MyPageResponseDto myPageResponseDto = new MyPageResponseDto(username, nickname,user_type,isKakao);
 
         return new ResponseEntity<>(myPageResponseDto, HttpStatus.valueOf(200));
     }
@@ -123,14 +125,8 @@ public class UserService {
     @Transactional
     public ResponseEntity<?> updateMyInfo(UpdateMyInfoRequestDto requestDto, User user) {
 
-        if (!requestDto.getPassword().equals(requestDto.getCheckPassword()))
-            return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
-
-        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
-            return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
-
         if(userRepository.existsByNickname(requestDto.getNickname()))
-            return new ResponseEntity<>("닉네임이 중복됩니다.", HttpStatus.valueOf(400));
+            return new ResponseEntity<>("중복된 닉네임 입니다.", HttpStatus.valueOf(400));
 
         user.updateMyInfo(requestDto);
 
@@ -139,10 +135,27 @@ public class UserService {
         return new ResponseEntity<>("변경이 완료 되었습니다.", HttpStatus.valueOf(200));
     }
 
+    @Transactional
+    public ResponseEntity<?> updateMyPassword(UpdateMyPasswordRequestDto requestDto, User user) {
+        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
+            return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
+
+        if(!requestDto.getChangePassword().equals(requestDto.getConfirmChangePassword()))
+            return new ResponseEntity<>("변경하는 비밀번호가 일치하지 않습니다.", HttpStatus.valueOf(400));
+
+        if(passwordEncoder.matches(requestDto.getChangePassword(), user.getPassword()))
+            return new ResponseEntity<>("동일한 비밀번호로 변경이 불가능 합니다.", HttpStatus.valueOf(400));
+
+        user.updateMyPassword(passwordEncoder.encode(requestDto.getChangePassword()));
+
+        userRepository.save(user);
+
+        return new ResponseEntity<>("변경이 완료 되었습니다.", HttpStatus.valueOf(200));
+    }
 
     public ResponseEntity<?> leaveUser(LeaveUserRequestDto requestDto, User user) {
         if(!requestDto.getPassword().equals(requestDto.getCheckPassword()))
-            return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
+            return new ResponseEntity<>("변경하는 비밀번호가 일치하지 않습니다.", HttpStatus.valueOf(400));
 
         if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));

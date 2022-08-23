@@ -30,6 +30,11 @@ public class Room {
         this.title = requestDto.getTitle();
         this.user = user;
     }
+    public Room(String title, User user , Enter enter) {
+        this.title = title;
+        this.user = user;
+        this.enter = enter;
+    }
 
     public Long getId() {
         return id;

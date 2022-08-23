@@ -28,12 +28,16 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private Role user_type;
 
+    @Column(nullable = false)
+    private boolean isKakao;
 
-    public User(String username, String nickname, String password, Role userType) {
+
+    public User(String username, String nickname, String password, Role userType,boolean isKakao) {
         this.username = username;
         this.nickname = nickname;
         this.password = password;
         this.user_type = userType;
+        this.isKakao = isKakao;
     }
 
     public User(String nickname, String username, String password) {
@@ -45,7 +49,10 @@ public class User {
 
     public void updateMyInfo(UpdateMyInfoRequestDto updateMyInfoRequestDto) {
         this.nickname = updateMyInfoRequestDto.getNickname();
-        this.password = updateMyInfoRequestDto.getPassword();
         this.user_type = updateMyInfoRequestDto.getUser_type();
+    }
+
+    public void updateMyPassword(String password) {
+        this.password = password;
     }
 }

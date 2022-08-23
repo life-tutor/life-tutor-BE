@@ -4,6 +4,7 @@ import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
+import com.example.lifetutor.user.dto.request.UpdateMyPasswordRequestDto;
 import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.service.UserService;
@@ -53,10 +54,17 @@ public class UserController {
     }
 
     //마이페이지 정보 수정
-    @PutMapping("mypage/user")
+    @PutMapping("mypage/user/info")
     public ResponseEntity<?> updateMyInfo(@RequestBody UpdateMyInfoRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return userService.updateMyInfo(requestDto,user);
+    }
+
+    //패스워드 체인지
+    @PutMapping("mypage/user/password")
+    public ResponseEntity<?> updateMyInfo(@RequestBody UpdateMyPasswordRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+        return userService.updateMyPassword(requestDto,user);
     }
 
     //회원 탈퇴
