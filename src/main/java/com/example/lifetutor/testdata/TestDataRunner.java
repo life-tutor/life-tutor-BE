@@ -28,9 +28,6 @@ public class TestDataRunner implements ApplicationRunner {
         User user1 = new User("a@a.a","king1", passwordEncoder.encode("1234"), Role.SEEKER,false);
         userRepository.save(user);
         userRepository.save(user1);
-
-        Enter enter = new Enter(1);
-        Room room = new Room("dd",user,enter);
-        roomRepository.save(room);
+        
     }
 }
