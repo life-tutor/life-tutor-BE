@@ -4,7 +4,6 @@ import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.user.model.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 
 @Entity
 public class Likes {
@@ -12,12 +11,12 @@ public class Likes {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="USER_ID",nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="POST_ID",nullable = false)
     private Post post;
 
     public Long getId() {
