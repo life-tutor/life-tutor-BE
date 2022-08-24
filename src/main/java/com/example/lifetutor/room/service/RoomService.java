@@ -134,7 +134,7 @@ public class RoomService {
             ContentResponseDto responseDto = new ContentResponseDto(room,tags);
             content.add(responseDto);
         }
-        if(content.isEmpty()) throw new IllegalArgumentException("채팅방이 없습니다.");
+//        if(content.isEmpty()) throw new IllegalArgumentException("채팅방이 없습니다.");
         return new RoomResponseDto(isLast,content);
     }
 
