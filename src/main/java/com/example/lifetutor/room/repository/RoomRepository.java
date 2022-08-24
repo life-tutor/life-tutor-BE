@@ -9,6 +9,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findAllByOrderByIdDesc(Pageable pageable);
-    @Query("select r from Room r inner join r.hashtags h where h.hashtag.hashtag=:hashtag")
+    @Query("select distinct r from Room r inner join r.hashtags h where h.hashtag.hashtag like %:hashtag%")
     Page<Room> roomByHashtag(Pageable pageable, @Param("hashtag") String hashtag);
 }
