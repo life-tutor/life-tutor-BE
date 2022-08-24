@@ -4,6 +4,7 @@ import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.likes.model.Likes;
+import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;
 import lombok.Getter;
@@ -42,12 +43,9 @@ public class Post extends Timestamped {
     @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags;
 
-//    @OneToMany(mappedBy = "post")
-//    private List<Hashtag> hashtags;
-
-    public Post(User user, String title, String posting_content) {
-        this.user = user;
-        this.title = title;
-        this.posting_content = posting_content;
+    public Post(PostRequestDto postRequestDto) {
+        this.user = postRequestDto.getUser();
+        this.title = postRequestDto.getTitle();
+        this.posting_content = postRequestDto.getPosting_content();
     }
 }

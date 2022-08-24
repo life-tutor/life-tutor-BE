@@ -59,15 +59,17 @@ public class PostService {
 
     @Transactional
     public void registerPost(PostRequestDto postRequestDto, UserDetailsImpl userDetails) {
-        String title = postRequestDto.getTitle();
-        String posting_content = postRequestDto.getPosting_content();
-//        String imgUrl = postRequestDto.getImgUrl();
+        // post 저장
+        postRequestDto.setUser(userDetails.getUser());
+        Post post = new Post(postRequestDto);
+        postRepository.save(post);
+
+        // hashtag 저장
         List<String> hashtag = postRequestDto.getHashtag();
+        saveHashtag(post, hashtag);
+    }
 
-
-        User user = userDetails.getUser();
-        Post post = new Post(user, title, posting_content);
-
+    private void saveHashtag(Post post, List<String> hashtag) {
         for (String s : hashtag) {
             Hashtag ht = hashtagRepository.findByHashtag(s);
             if (ht == null) {
@@ -80,8 +82,6 @@ public class PostService {
                 postHashtagRepository.save(postHashtag);
             }
         }
-
-        postRepository.save(post);
     }
 
     @Transactional
@@ -191,18 +191,7 @@ public class PostService {
         List<String> hashtag = postRequestDto.getHashtag();
         if (!(hashtag==null)) {
             postHashtagRepository.deleteByPostId(postingId);
-            for (String s : hashtag) {
-                Hashtag ht = hashtagRepository.findByHashtag(s);
-                if (ht == null) {
-                    Hashtag enrollmentHt = new Hashtag(s);
-                    PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
-                    hashtagRepository.save(enrollmentHt);
-                    postHashtagRepository.save(postHashtag);
-                } else {
-                    PostHashtag postHashtag = new PostHashtag(post, ht);
-                    postHashtagRepository.save(postHashtag);
-                }
-            }
+            saveHashtag(post, hashtag);
         } else {
             postHashtagRepository.deleteByPostId(postingId);
         }
