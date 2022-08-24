@@ -148,6 +148,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/login/oauth2/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/login/oauth2/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/oauth2/redirect/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/iting/**").permitAll()
 // 그 외 어떤 요청이든 '인증'
                 .anyRequest().authenticated()
                 .and()

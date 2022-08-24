@@ -12,4 +12,5 @@ public class MyPageResponseDto {
     private String username;
     private String nickname;
     private Role user_type;
+    private boolean isKakao;
 }
