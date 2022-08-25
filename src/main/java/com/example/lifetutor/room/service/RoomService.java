@@ -21,10 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Transactional
 @Service
@@ -69,8 +66,11 @@ public class RoomService {
             HashMap<String,Integer> map = new HashMap<>();
             int index = 0;
             for(String hashtag : requestDto.getHashtag()){
-                index ++;
-                map.put(hashtag,index);
+                hashtag = hashtag.trim();
+                if(!hashtag.isEmpty()){
+                    index ++;
+                    map.put(hashtag,index);
+                }
             }
             Set<String> keySet = map.keySet();
             for(String key: keySet){
@@ -87,6 +87,7 @@ public class RoomService {
         room.validateUser(user);
         isEmpty(requestDto);
         if(room.getEnters().size() == 1) room.update(requestDto);
+        else throw new IllegalArgumentException("채팅방에 게스트가 입장한 후엔 수정이 불가능합니다.");
         // 해쉬태그는 추가할 수도 있으므로 삭제 후 다시 작성
         if(!room.getHashtags().isEmpty()){
             for(RoomHashtag roomHashtag : room.getHashtags()){
