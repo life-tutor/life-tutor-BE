@@ -12,7 +12,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-@Slf4j
 @Transactional
 @Service
 public class MessageService {
@@ -25,11 +24,7 @@ public class MessageService {
 
     // 채팅 메시지
     public void message(MessageRequestDto message, Long room_id){
-//        foundRoom(room_id);
-//        Message msg = new Message(message,user,room);
-//        room.addMessage(msg);
         String nickname = message.getNickname();
-        log.info("enterType: "+message.getEnter());
         if(MessageRequestDto.Enter.ENTER.equals(message.getEnter())){
             message.setMessage(nickname + "님이 들어왔습니다.");
         }

@@ -28,19 +28,4 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/iting");
         registry.addEndpoint("/iting").setAllowedOriginPatterns("*").withSockJS();
     }
-
-    @Override
-    public void configureClientInboundChannel(ChannelRegistration registration){
-        registration.interceptors(new ChannelInterceptor() {
-            @Override
-            public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                if(StompCommand.CONNECT.equals(accessor.getCommand())){
-                    Authentication user = (Authentication) accessor.getHeader("Authorization");
-                            accessor.setUser(user);
-                }
-                return message;
-            }
-        });
-    }
 }
