@@ -41,13 +41,6 @@ public class Post extends Timestamped {
     @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags;
 
-    @Builder
-    public Post(User user, String title, List<Comment> comments) {
-        this.user = user;
-        this.title = title;
-        this.comments = comments;
-    }
-
     public Post(PostRequestDto requestDto) {
         this.user = requestDto.getUser();
         this.title = requestDto.getTitle();
