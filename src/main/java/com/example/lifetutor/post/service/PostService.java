@@ -120,6 +120,7 @@ public class PostService {
         HashSet<Long> postIds = new HashSet<>();
         for (String t : tags) {
             Hashtag tag = hashtagRepository.findByHashtag(t);
+            if (tag==null) throw new IllegalArgumentException("No Search Data.");
             List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
             for (PostHashtag postHashtag : postHashtags) {
                 postIds.add(postHashtag.getPost().getId());
