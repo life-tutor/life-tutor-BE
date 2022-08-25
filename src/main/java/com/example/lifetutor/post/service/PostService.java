@@ -44,17 +44,26 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto getPosts(int page, int size, UserDetailsImpl userDetails) {
+    public PostResponseDto getPosts(int page, int size, boolean isUser, UserDetailsImpl userDetails) {
         Sort.Direction direction = Sort.Direction.DESC;
         Sort sort = Sort.by(direction, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Post> posts = postRepository.findAll(pageable);
 
+        Page<Post> posts = postRepository.findAll(pageable);
         List<Post> contents = posts.getContent();
 
-        List<ContentDto> content = getContents(userDetails, contents);
-        return new PostResponseDto(content, posts.isLast());
+        if (isUser) {
+            List<ContentDto> content = getContents(userDetails, contents);
+            return new PostResponseDto(content, posts.isLast());
+        } else {
+            List<ContentDto> contentList = getContents(userDetails, contents);
+            List<ContentDto> content = new ArrayList<>();
+
+            for (int i = 0; i < 5; i++) content.add(contentList.get(i));
+
+            return new PostResponseDto(content, posts.isLast());
+        }
     }
 
     @Transactional
@@ -120,6 +129,7 @@ public class PostService {
         HashSet<Long> postIds = new HashSet<>();
         for (String t : tags) {
             Hashtag tag = hashtagRepository.findByHashtag(t);
+            if (tag==null) throw new IllegalArgumentException("No Search Data.");
             List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
             for (PostHashtag postHashtag : postHashtags) {
                 postIds.add(postHashtag.getPost().getId());
