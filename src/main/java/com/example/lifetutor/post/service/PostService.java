@@ -196,7 +196,12 @@ public class PostService {
     }
 
     private void saveHashtag(Post post, List<String> hashtag) {
-        Set<String> tags = new HashSet<>(hashtag);
+
+        Set<String> tags = new HashSet<>();
+        for (String s : hashtag) {
+            s=s.trim();
+            if (!s.equals("")) tags.add(s);
+        }
 
         for (String s : tags) {
             Hashtag ht = hashtagRepository.findByHashtag(s);
