@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-
 @Service
 @Transactional
 public class CommentLikesService {
@@ -26,18 +25,18 @@ public class CommentLikesService {
     // 공감
     public void likes(Long commentId, User user){
         Comment comment = commentNotFound(commentId);
-        CommentLikes likes = new CommentLikes(user,comment);
         //이미 공감한 상태인지 확인
         if(isLikes(comment,user)) throw new IllegalArgumentException("이미 공감하셨습니다.");
-        else likesRepository.save(likes);
+        CommentLikes likes = new CommentLikes(user,comment);
+        likesRepository.save(likes);
     }
 
     // 공감 삭제
     public void unLikes(Long commentId, User user){
         Comment comment = commentNotFound(commentId);
-        CommentLikes likes = foundLikes(comment,user);
         if(!isLikes(comment,user)) throw new IllegalArgumentException("공감한적 없습니다.");
-        else likesRepository.deleteById(likes.getId());
+        CommentLikes likes = foundLikes(comment,user);
+        likesRepository.deleteById(likes.getId());
     }
 
     //logic check
