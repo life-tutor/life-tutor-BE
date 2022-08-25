@@ -1,7 +1,7 @@
 package com.example.lifetutor.post.service;
 
 import com.example.lifetutor.comment.model.Comment;
-import com.example.lifetutor.commentLikes.model.CommentLikes;
+import com.example.lifetutor.commentLikes.service.CommentLikesService;
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
@@ -14,8 +14,6 @@ import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
-import com.example.lifetutor.user.model.Role;
-import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -32,12 +29,14 @@ import java.util.List;
 @Service
 public class PostService {
 
+    private final CommentLikesService commentLikesService;
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
 
     @Autowired
-    public PostService(PostRepository postRepository, HashtagRepository hashtagRepository, PostHashtagRepository postHashtagRepository) {
+    public PostService(CommentLikesService commentLikesService, PostRepository postRepository, HashtagRepository hashtagRepository, PostHashtagRepository postHashtagRepository) {
+        this.commentLikesService = commentLikesService;
         this.postRepository = postRepository;
         this.hashtagRepository = hashtagRepository;
         this.postHashtagRepository = postHashtagRepository;
@@ -59,29 +58,13 @@ public class PostService {
 
     @Transactional
     public void registerPost(PostRequestDto postRequestDto, UserDetailsImpl userDetails) {
-        String title = postRequestDto.getTitle();
-        String posting_content = postRequestDto.getPosting_content();
-//        String imgUrl = postRequestDto.getImgUrl();
-        List<String> hashtag = postRequestDto.getHashtag();
+        postRequestDto.setUser(userDetails.getUser());
+        Post post = new Post(postRequestDto);
 
-
-        User user = userDetails.getUser();
-        Post post = new Post(user, title, posting_content);
-
-        for (String s : hashtag) {
-            Hashtag ht = hashtagRepository.findByHashtag(s);
-            if (ht == null) {
-                Hashtag enrollmentHt = new Hashtag(s);
-                PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
-                hashtagRepository.save(enrollmentHt);
-                postHashtagRepository.save(postHashtag);
-            } else {
-                PostHashtag postHashtag = new PostHashtag(post, ht);
-                postHashtagRepository.save(postHashtag);
-            }
-        }
-
+        // post 저장
         postRepository.save(post);
+        // hashtag 저장
+        saveHashtag(post, postRequestDto.getHashtag());
     }
 
     @Transactional
@@ -91,23 +74,9 @@ public class PostService {
         Sort sort = Sort.by(direction, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        String[] tags = hashtag.split(",");
 
-        HashSet<Long> postIds = new HashSet<>();
-        for (String s : tags) {
-            Hashtag tag = hashtagRepository.findByHashtag(s);
-            List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
-            for (int i = 0; i < postHashtags.size(); i++) {
-                PostHashtag postHashtag = postHashtags.get(i);
-                postIds.add(postHashtag.getPost().getId());
-            }
-        }
-        int i=0;
-        Long[] idArr = new Long[postIds.size()];
-        for (Long id : postIds) {
-            idArr[i] = id;
-            i++;
-        }
+        String[] tags = hashtag.split(",");
+        Long[] idArr = getDistinctIds(tags);
 
         Page<Post> posts = postRepository.findAll(pageable, idArr);
 
@@ -120,92 +89,23 @@ public class PostService {
     @Transactional
     public ContentDto getPost(Long postingId, UserDetailsImpl userDetails) {
         Post post = postRepository.findById(postingId).orElseThrow(
-                ()->new IllegalArgumentException("No search data."));
+                () -> new IllegalArgumentException("No search data."));
 
-        ContentDto contentDto = new ContentDto();
-
-        contentDto.setPosting_id(post.getId());
-        contentDto.setNickname(post.getUser().getNickname());
-        contentDto.setTitle(post.getTitle());
-        contentDto.setDate(post.getDate());
-        contentDto.setPosting_content(post.getPosting_content());
-
-        List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(post.getId());
-        List<String> hashtags = new ArrayList<>();
-
-        for (PostHashtag h : postHashtags) {
-            Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
-                    .orElseThrow(() -> new IllegalArgumentException("No search date"));
-            hashtags.add(ht.getHashtag());
-        }
-        contentDto.setHashtag(hashtags);
-
-        boolean isLike = false;
-        List<Likes> likes = post.getLikes();
-
-        int like_count = likes.size();
-
-        for (Likes l : likes) {
-            if (l.getUser().getId() == userDetails.getUser().getId()) {
-                isLike = true;
-                break;
-            }
-        }
-        contentDto.setLike_count(like_count);
-        contentDto.setLike(isLike);
-
-        List<Comment> comments = post.getComments();
-        List<CommentDto> commentDtos = new ArrayList<>();
-        for (Comment comment : comments) {
-            CommentDto commentDto = new CommentDto();
-            commentDto.setId(comment.getId());
-            commentDto.setNickname((comment.getUser().getNickname()));
-            commentDto.setContent(comment.getContent());
-            commentDto.setDate(comment.getDate());
-            commentDto.setLike_count(comment.getLikes().size());
-            List<CommentLikes> commentLikes = comment.getLikes();
-            for (CommentLikes commentLike : commentLikes) {
-                if (commentLike.getUser().getId() == userDetails.getUser().getId()) {
-                    commentDto.setLike(true);
-                    break;
-                } else commentDto.setLike(false);
-            }
-            commentDto.setUser_type(comment.getUser().getUser_type());
-            commentDtos.add(commentDto);
-        }
-
-        contentDto.setComments(commentDtos);
-        contentDto.setUser_type(post.getUser().getUser_type());
-
-
-        return contentDto;
+        return getCustomMadePost(userDetails, post);
     }
 
     @Transactional
     public void editPost(PostRequestDto postRequestDto, Long postingId) {
-        Post post = postRepository.findById(postingId).orElseThrow(()-> new IllegalArgumentException("No search Data."));
+        Post post = postRepository.findById(postingId)
+                .orElseThrow(() -> new IllegalArgumentException("No search Data."));
 
         post.setTitle(postRequestDto.getTitle());
         post.setPosting_content(postRequestDto.getPosting_content());
 
         List<String> hashtag = postRequestDto.getHashtag();
-        if (!(hashtag==null)) {
-            postHashtagRepository.deleteByPostId(postingId);
-            for (String s : hashtag) {
-                Hashtag ht = hashtagRepository.findByHashtag(s);
-                if (ht == null) {
-                    Hashtag enrollmentHt = new Hashtag(s);
-                    PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
-                    hashtagRepository.save(enrollmentHt);
-                    postHashtagRepository.save(postHashtag);
-                } else {
-                    PostHashtag postHashtag = new PostHashtag(post, ht);
-                    postHashtagRepository.save(postHashtag);
-                }
-            }
-        } else {
-            postHashtagRepository.deleteByPostId(postingId);
-        }
+        postHashtagRepository.deleteByPostId(postingId);
+        if (!(hashtag == null)) saveHashtag(post, hashtag);
+
         postRepository.save(post);
     }
 
@@ -214,40 +114,97 @@ public class PostService {
         postRepository.deleteById(postingId);
     }
 
+    private Long[] getDistinctIds(String[] tags) {
+        HashSet<Long> postIds = new HashSet<>();
+        for (String t : tags) {
+            Hashtag tag = hashtagRepository.findByHashtag(t);
+            List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
+            for (PostHashtag postHashtag : postHashtags) {
+                postIds.add(postHashtag.getPost().getId());
+            }
+        }
+        int i = 0;
+        Long[] idArr = new Long[postIds.size()];
+        for (Long id : postIds) {
+            idArr[i] = id;
+            i++;
+        }
+        return idArr;
+    }
+
     private List<ContentDto> getContents(UserDetailsImpl userDetails, List<Post> contents) {
         List<ContentDto> content = new ArrayList<>();
-        for (Post p : contents) {
-            Long postingId = p.getId();
-            String nickname = p.getUser().getNickname();
-            String title = p.getTitle();
-            LocalDateTime date = p.getDate();
-            String posting_content = p.getPosting_content();
-            List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(p.getId());
-            int comment_count = p.getComments().size();
-            int like_count = p.getLikes().size();
-            boolean isLike = false;
-
-            List<Likes> likes = p.getLikes();
-            for (Likes l : likes) {
-                if (l.getUser().getId() == userDetails.getUser().getId()) {
-                    isLike = true;
-                    break;
-                }
-            }
-
-            List<String> hashtags = new ArrayList<>();
-
-            for (PostHashtag h : postHashtags) {
-                Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
-                        .orElseThrow(() -> new IllegalArgumentException("No search date"));
-                hashtags.add(ht.getHashtag());
-            }
-
-            Role user_type = p.getUser().getUser_type();
-
-            ContentDto c = new ContentDto(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count, isLike, user_type);
-            content.add(c);
-        }
+        for (Post post : contents)
+            content.add(getCustomMadePost(userDetails, post));
         return content;
+    }
+
+    private ContentDto getCustomMadePost(UserDetailsImpl userDetails, Post post) {
+
+        // 게시글의 해시태그 가져오기
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(post.getId());
+        List<String> hashtags = new ArrayList<>();
+
+        for (PostHashtag h : postHashtags) {
+            Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No search date"));
+            hashtags.add(ht.getHashtag());
+        }
+
+        boolean isLike = false;
+        List<Likes> likes = post.getLikes();
+        int like_count = likes.size();
+
+        for (Likes l : likes) {
+            if (l.getUser().getId() == userDetails.getUser().getId()) {
+                isLike = true;
+                break;
+            }
+        }
+
+        // 게시글의 댓글 가져오기
+        List<Comment> comments = post.getComments();
+        List<CommentDto> commentDtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDto commentDto = CommentDto.builder()
+                    .id(comment.getId())
+                    .nickname(comment.getUser().getNickname())
+                    .content(comment.getContent())
+                    .date(comment.getDate())
+                    .like_count(comment.getLikes().size())
+                    .isLike(commentLikesService.isLikes(comment, userDetails.getUser()))
+                    .user_type(comment.getUser().getUser_type())
+                    .build();
+            commentDtos.add(commentDto);
+        }
+
+        return ContentDto.builder()
+                .posting_id(post.getId())
+                .nickname(post.getUser().getNickname())
+                .title(post.getTitle())
+                .date(post.getDate())
+                .posting_content(post.getPosting_content())
+                .hashtag(hashtags)
+                .like_count(like_count)
+                .isLike(isLike)
+                .comments(commentDtos)
+                .comment_count(post.getComments().size())
+                .user_type(post.getUser().getUser_type())
+                .build();
+    }
+
+    private void saveHashtag(Post post, List<String> hashtag) {
+        for (String s : hashtag) {
+            Hashtag ht = hashtagRepository.findByHashtag(s);
+            if (ht == null) {
+                Hashtag enrollmentHt = new Hashtag(s);
+                PostHashtag postHashtag = new PostHashtag(post, enrollmentHt);
+                hashtagRepository.save(enrollmentHt);
+                postHashtagRepository.save(postHashtag);
+            } else {
+                PostHashtag postHashtag = new PostHashtag(post, ht);
+                postHashtagRepository.save(postHashtag);
+            }
+        }
     }
 }
