@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface PostHashtagRepository extends JpaRepository<PostHashtag, Long> {
     List<PostHashtag> findAllByPostId(Long id);
+
+    void deleteByPostId(Long postingId);
+
+    List<PostHashtag> findAllByHashtagId(Long id);
 }

@@ -7,7 +7,6 @@ import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -20,15 +19,15 @@ public class Comment extends Timestamped {
     @Column(nullable = false)
     String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="USER_ID",nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name="POST_ID",nullable = false)
     private Post post;
 
-    @OneToMany(mappedBy = "comment")
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
     private List<CommentLikes> likes;
 
     public Comment() {}

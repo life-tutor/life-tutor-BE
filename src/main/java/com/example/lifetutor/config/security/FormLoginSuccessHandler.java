@@ -26,7 +26,8 @@ public class FormLoginSuccessHandler extends SavedRequestAwareAuthenticationSucc
 
         LoginResponseDto loginResponseDto = new LoginResponseDto(TOKEN_TYPE+ " " + token,userDetails.getUser().getUsername(),
                 userDetails.getUser().getNickname(),
-                userDetails.getUser().getUser_type());
+                userDetails.getUser().getUser_type(),
+                userDetails.getUser().isKakao());
 
         response.addHeader(AUTH_HEADER, TOKEN_TYPE + " " + token);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

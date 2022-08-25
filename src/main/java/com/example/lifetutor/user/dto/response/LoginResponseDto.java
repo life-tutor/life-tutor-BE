@@ -9,11 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponseDto {
-    String token;
-
-    String username;
-
-    String nickname;
-
-    Role user_type;
+    private String token;
+    private String username;
+    private String nickname;
+    private Role user_type;
+    private boolean isKakao;
 }
