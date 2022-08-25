@@ -7,17 +7,15 @@ import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@NoArgsConstructor
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Post extends Timestamped {
 
     @Id
@@ -43,9 +41,16 @@ public class Post extends Timestamped {
     @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags;
 
-    public Post(PostRequestDto postRequestDto) {
-        this.user = postRequestDto.getUser();
-        this.title = postRequestDto.getTitle();
-        this.posting_content = postRequestDto.getPosting_content();
+    @Builder
+    public Post(User user, String title, List<Comment> comments) {
+        this.user = user;
+        this.title = title;
+        this.comments = comments;
+    }
+
+    public Post(PostRequestDto requestDto) {
+        this.user = requestDto.getUser();
+        this.title = requestDto.getTitle();
+        this.posting_content = requestDto.getPosting_content();
     }
 }

@@ -5,6 +5,7 @@ import com.example.lifetutor.comment.repository.CommentRepository;
 import com.example.lifetutor.commentLikes.model.CommentLikes;
 import com.example.lifetutor.commentLikes.repository.CommentLikesRepository;
 import com.example.lifetutor.user.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
