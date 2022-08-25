@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PostService {
@@ -64,7 +65,8 @@ public class PostService {
         // post 저장
         postRepository.save(post);
         // hashtag 저장
-        saveHashtag(post, postRequestDto.getHashtag());
+        if (!postRequestDto.getHashtag().isEmpty() || postRequestDto.getHashtag()!=null)
+            saveHashtag(post, postRequestDto.getHashtag());
     }
 
     @Transactional
@@ -194,7 +196,9 @@ public class PostService {
     }
 
     private void saveHashtag(Post post, List<String> hashtag) {
-        for (String s : hashtag) {
+        Set<String> tags = new HashSet<>(hashtag);
+
+        for (String s : tags) {
             Hashtag ht = hashtagRepository.findByHashtag(s);
             if (ht == null) {
                 Hashtag enrollmentHt = new Hashtag(s);
