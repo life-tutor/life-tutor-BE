@@ -100,7 +100,7 @@ public class RoomService {
     public void enterRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
         List<Enter> enters = room.getEnters();
-        if (enters.size() < 2) checkHost(room, user, "enter");
+        if (enters.size() < 2) checkHost(room, user, Check.ENTER);
         else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
     }
 
@@ -108,7 +108,7 @@ public class RoomService {
     public void exitRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
         String host = room.getUser().getUsername();
-        checkHost(room,user,"exit");
+        checkHost(room,user,Check.EXIT);
         if(host.equals(user.getUsername())) deleteRoom(room_id,user);
     }
 
@@ -137,14 +137,9 @@ public class RoomService {
     // 해쉬태그 저장
     public void saveHashtag(String tagStr, Room room){
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
-        if(tag == null){
-            Hashtag hashtag = new Hashtag(tagStr);
-            RoomHashtag roomHashtag = new RoomHashtag(hashtag,room);
-            roomHashtagRepository.save(roomHashtag);
-        }else{
-            RoomHashtag roomHashtag = new RoomHashtag(tag,room);
-            roomHashtagRepository.save(roomHashtag);
-        }
+        if(tag == null) tag = new Hashtag(tagStr);
+        RoomHashtag roomHashtag = new RoomHashtag(tag,room);
+        roomHashtagRepository.save(roomHashtag);
     }
 
     // 채팅방 validate
@@ -160,18 +155,22 @@ public class RoomService {
         if(hashtag.isEmpty()) throw new IllegalArgumentException("검색어를 입력해주세요.");
     }
     // 채팅방 host 확인
-    public void checkHost(Room room, User user, String check){
+    public void checkHost(Room room, User user, Check check){
         String host = room.getUser().getUsername();
         String guest = user.getUsername();
         if(!host.equals(guest)){
-            if(check.equals("enter")){
+            if(check.equals(Check.ENTER)){
                 Enter newEnter = new Enter(user,room);
                 enterRepository.save(newEnter);
             }
-            if(check.equals("exit")){
+            if(check.equals(Check.EXIT)){
                 Enter exitUser = enterRepository.findByUser(user);
                 enterRepository.delete(exitUser);
             }
         }
+    }
+    public enum Check{
+        ENTER,
+        EXIT
     }
 }
