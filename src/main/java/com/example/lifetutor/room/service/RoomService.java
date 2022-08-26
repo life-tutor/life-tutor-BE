@@ -3,6 +3,7 @@ package com.example.lifetutor.room.service;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
 import com.example.lifetutor.room.dto.request.RoomRequestDto;
+import com.example.lifetutor.room.dto.response.ContentResponseDto;
 import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.model.Enter;
 import com.example.lifetutor.room.model.Room;
@@ -10,7 +11,6 @@ import com.example.lifetutor.room.model.RoomHashtag;
 import com.example.lifetutor.room.repository.EnterRepository;
 import com.example.lifetutor.room.repository.RoomHashtagRepository;
 import com.example.lifetutor.room.repository.RoomRepository;
-import com.example.lifetutor.room.dto.response.ContentResponseDto;
 import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,7 +21,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 
 @Transactional
 @Service
@@ -60,8 +63,6 @@ public class RoomService {
         isEmpty(requestDto);
         Room room = new Room(requestDto,user);
         roomRepository.save(room);
-        Enter enter = new Enter(user,room);
-        enterRepository.save(enter);
         if(!requestDto.getHashtag().isEmpty()){
             Set<String> tags = new LinkedHashSet<>();
             for(String hashtag : requestDto.getHashtag()){
@@ -99,17 +100,21 @@ public class RoomService {
     // 채팅방 입장
     public void enterRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
-        List<Enter> enters = room.getEnters();
-        if (enters.size() < 2) checkHost(room, user, Check.ENTER);
-        else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
+        if(room.getEnters().size() < 2){
+            Enter enter = new Enter(user,room);
+            enterRepository.save(enter);
+        }else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
     }
 
     // 채팅방 퇴장
     public void exitRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
         String host = room.getUser().getUsername();
-        checkHost(room,user,Check.EXIT);
         if(host.equals(user.getUsername())) deleteRoom(room_id,user);
+        else{
+            Enter exitUser = enterRepository.findByUser(user);
+            enterRepository.delete(exitUser);
+        }
     }
 
     // 채팅방 삭제
@@ -149,28 +154,11 @@ public class RoomService {
         );
     }
     public void isEmpty(RoomRequestDto requestDto){
-        if(requestDto.getTitle().isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
+        String title = requestDto.getTitle();
+        title = title.trim();
+        if(title.isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
     }
     public void notSearch(String hashtag){
         if(hashtag.isEmpty()) throw new IllegalArgumentException("검색어를 입력해주세요.");
-    }
-    // 채팅방 host 확인
-    public void checkHost(Room room, User user, Check check){
-        String host = room.getUser().getUsername();
-        String guest = user.getUsername();
-        if(!host.equals(guest)){
-            if(check.equals(Check.ENTER)){
-                Enter newEnter = new Enter(user,room);
-                enterRepository.save(newEnter);
-            }
-            if(check.equals(Check.EXIT)){
-                Enter exitUser = enterRepository.findByUser(user);
-                enterRepository.delete(exitUser);
-            }
-        }
-    }
-    public enum Check{
-        ENTER,
-        EXIT
     }
 }
