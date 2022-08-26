@@ -63,18 +63,13 @@ public class RoomService {
         Enter enter = new Enter(user,room);
         enterRepository.save(enter);
         if(!requestDto.getHashtag().isEmpty()){
-            HashMap<String,Integer> map = new HashMap<>();
-            int index = 0;
+            Set<String> tags = new LinkedHashSet<>();
             for(String hashtag : requestDto.getHashtag()){
                 hashtag = hashtag.trim();
-                if(!hashtag.isEmpty()){
-                    index ++;
-                    map.put(hashtag,index);
-                }
+                if(!hashtag.isEmpty()) tags.add(hashtag);
             }
-            Set<String> keySet = map.keySet();
-            for(String key: keySet){
-                saveHashtag(key,room);
+            for(String tag : tags){
+                saveHashtag(tag,room);
             }
         }
         return new ResponseEntity<>(room.getId().toString(), HttpStatus.CREATED);
