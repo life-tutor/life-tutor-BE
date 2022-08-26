@@ -2,7 +2,7 @@ package com.example.lifetutor.integration;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.example.lifetutor.comment.repository.CommentRepository;
+import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
 import com.example.lifetutor.user.model.Role;
@@ -19,7 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,11 +38,15 @@ public class CommentIntegrationTest {
             @Autowired PostRepository postRepository,
             @Autowired PasswordEncoder passwordEncoder
             ){
-        User user1 = new User("username","nickname", passwordEncoder.encode("1234"), Role.SEEKER);
-        User user2 = new User("test","tester", passwordEncoder.encode("5678"), Role.SEEKER);
+        User user1 = new User("username","nickname", passwordEncoder.encode("1234"), Role.SEEKER,false);
+        User user2 = new User("test","tester", passwordEncoder.encode("5678"), Role.SEEKER,false);
         userRepository.save(user1);
         userRepository.save(user2);
-        Post post = new Post(user1,"title","content");
+        List<String> hashtag = new ArrayList<>();
+        PostRequestDto postRequestDto = new PostRequestDto(
+                user1,"title","content",hashtag
+        );
+        Post post = new Post(postRequestDto);
         postRepository.save(post);
     }
 
