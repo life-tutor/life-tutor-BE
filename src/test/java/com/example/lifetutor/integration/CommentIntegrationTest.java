@@ -40,8 +40,10 @@ public class CommentIntegrationTest {
             ){
         User user1 = new User("username","nickname", passwordEncoder.encode("1234"), Role.SEEKER,false);
         User user2 = new User("test","tester", passwordEncoder.encode("5678"), Role.SEEKER,false);
+        User user3 = new User("test2","tester2", passwordEncoder.encode("0000"), Role.SEEKER,false);
         userRepository.save(user1);
         userRepository.save(user2);
+        userRepository.save(user3);
         List<String> hashtag = new ArrayList<>();
         PostRequestDto postRequestDto = new PostRequestDto(
                 user1,"title","content",hashtag
@@ -92,7 +94,6 @@ public class CommentIntegrationTest {
         class Fail{
 
             @Test
-            @Order(17)
             @DisplayName("게시글 없음")
             void test1(){
                 //given
@@ -114,7 +115,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(18)
             @DisplayName("작성자 아님")
             void test2(){
                 //given
@@ -140,7 +140,6 @@ public class CommentIntegrationTest {
         class Success{
 
             @Test
-            @Order(19)
             @DisplayName("삭제 정상")
             void test(){
                 //given
@@ -172,7 +171,6 @@ public class CommentIntegrationTest {
         class Fail{
 
             @Test
-            @Order(11)
             @DisplayName("게시글 없음")
             void test1(){
                 //given
@@ -197,7 +195,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(12)
             @DisplayName("댓글 없음")
             void test2(){
                 //given
@@ -222,7 +219,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(13)
             @DisplayName("null")
             void test3(){
                 //given
@@ -247,7 +243,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(14)
             @DisplayName("blank")
             void test4(){
                 //given
@@ -272,7 +267,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(15)
             @DisplayName("작성자 아님")
             void test5(){
                 //given
@@ -302,7 +296,6 @@ public class CommentIntegrationTest {
         class Success{
 
             @Test
-            @Order(16)
             @DisplayName("수정 정상")
             void test(){
                 //given
@@ -337,7 +330,6 @@ public class CommentIntegrationTest {
         class Fail{
 
             @Test
-            @Order(8)
             @DisplayName("댓글 없음")
             void test1(){
                 //given
@@ -358,7 +350,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(9)
             @DisplayName("공감 없음")
             void test2(){
                 //given
@@ -384,7 +375,6 @@ public class CommentIntegrationTest {
         class Success{
 
             @Test
-            @Order(10)
             @DisplayName("취소 정상")
             void test(){
                 //given
@@ -415,7 +405,6 @@ public class CommentIntegrationTest {
         class Fail{
 
             @Test
-            @Order(5)
             @DisplayName("댓글 없음")
             void test1(){
                 //given
@@ -435,7 +424,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(6)
             @DisplayName("이미 공감함")
             void test2(){
                 //given
@@ -460,7 +448,6 @@ public class CommentIntegrationTest {
         class Success{
 
             @Test
-            @Order(7)
             @DisplayName("공감 정상")
             void test(){
                 //given
@@ -490,7 +477,6 @@ public class CommentIntegrationTest {
         class Fail{
 
             @Test
-            @Order(1)
             @DisplayName("게시글 없음")
             void test1(){
                 //given
@@ -513,7 +499,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(2)
             @DisplayName("null")
             void test2(){
                 //given
@@ -536,7 +521,6 @@ public class CommentIntegrationTest {
             }
 
             @Test
-            @Order(3)
             @DisplayName("blank")
             void test3(){
                 //given
@@ -564,7 +548,6 @@ public class CommentIntegrationTest {
         class Success{
 
             @Test
-            @Order(4)
             @DisplayName("작성 정상")
             void test(){
                 //given
