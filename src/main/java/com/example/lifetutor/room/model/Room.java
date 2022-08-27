@@ -31,6 +31,11 @@ public class Room {
         this.user = user;
     }
 
+    public Room(String title, User user) {
+        this.title = title;
+        this.user = user;
+    }
+
     public Long getId() {
         return id;
     }

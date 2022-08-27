@@ -40,7 +40,7 @@ public class UserOAuth2Service extends DefaultOAuth2UserService {
         }
 
         if (!userRepository.findByUsername(username).isPresent()) {
-            User user = new User(username, "User" + (int) (Math.random() * 1000000000), UUID.randomUUID().toString(), Role.SEEKER,true);
+            User user = new User(username, "User" + (int) (Math.random() * 1000000000), UUID.randomUUID().toString(), Role.SEEKER, true);
             userRepository.save(user);
         }
 
