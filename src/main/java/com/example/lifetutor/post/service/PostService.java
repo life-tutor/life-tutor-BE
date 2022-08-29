@@ -122,6 +122,7 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postingId) {
+        postHashtagRepository.deleteByPostId(postingId);
         postRepository.deleteById(postingId);
     }
 
