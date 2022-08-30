@@ -43,7 +43,7 @@ public class PostService {
         this.postHashtagRepository = postHashtagRepository;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PostResponseDto getPosts(int page, int size, UserDetailsImpl userDetails) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -58,6 +58,7 @@ public class PostService {
         return new PostResponseDto(content, posts.isLast());
     }
 
+    @Transactional(readOnly = true)
     public PostResponseDto getPostsOfNotUser(int page, int size) {
 
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -68,15 +69,8 @@ public class PostService {
         List<Post> contents = posts.getContent();
 
         List<ContentDto> content = new ArrayList<>();
-        int ContentSize = contents.size();
-
-        if (ContentSize >= 5) {
-            for (int i = 0; i < 5; i++)
-                content.add(getCustomMadePost(contents.get(i)));
-        } else {
-            for (Post post : contents)
-                content.add(getCustomMadePost(post));
-        }
+        for (Post post : contents)
+            content.add(getCustomMadePost(post));
 
         return new PostResponseDto(content, posts.isLast());
     }
