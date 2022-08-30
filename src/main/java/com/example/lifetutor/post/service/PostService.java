@@ -44,26 +44,36 @@ public class PostService {
     }
 
     @Transactional
-    public PostResponseDto getPosts(int page, int size, boolean isUser, UserDetailsImpl userDetails) {
-        Sort.Direction direction = Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, "id");
+    public PostResponseDto getPosts(int page, int size, UserDetailsImpl userDetails) {
+//        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
         Page<Post> posts = postRepository.findAll(pageable);
         List<Post> contents = posts.getContent();
 
-        if (isUser) {
-            List<ContentDto> content = getContents(userDetails, contents);
-            return new PostResponseDto(content, posts.isLast());
-        } else {
-            List<ContentDto> contentList = getContents(userDetails, contents);
-            List<ContentDto> content = new ArrayList<>();
+        List<ContentDto> content = getContents(userDetails, contents);
 
-            for (int i = 0; i < 5; i++) content.add(contentList.get(i));
+        return new PostResponseDto(content, posts.isLast());
+    }
 
-            return new PostResponseDto(content, posts.isLast());
+    public PostResponseDto getPostsOfNotUser(int page, int size) {
+
+//        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Post> posts = postRepository.findAll(pageable);
+        List<Post> contents = posts.getContent();
+
+        List<ContentDto> content = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            content.add(getCustomMadePost(contents.get(i)));
         }
+
+        return new PostResponseDto(content, posts.isLast());
     }
 
     @Transactional
@@ -74,7 +84,7 @@ public class PostService {
         // post 저장
         postRepository.save(post);
         // hashtag 저장
-        if (!postRequestDto.getHashtag().isEmpty() || postRequestDto.getHashtag()!=null)
+        if (!postRequestDto.getHashtag().isEmpty() || postRequestDto.getHashtag() != null)
             saveHashtag(post, postRequestDto.getHashtag());
     }
 
@@ -122,6 +132,7 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postingId) {
+        postHashtagRepository.deleteByPostId(postingId);
         postRepository.deleteById(postingId);
     }
 
@@ -129,7 +140,7 @@ public class PostService {
         HashSet<Long> postIds = new HashSet<>();
         for (String t : tags) {
             Hashtag tag = hashtagRepository.findByHashtag(t);
-            if (tag==null) throw new IllegalArgumentException("No Search Data.");
+            if (tag == null) throw new IllegalArgumentException("No Search Data.");
             List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
             for (PostHashtag postHashtag : postHashtags) {
                 postIds.add(postHashtag.getPost().getId());
@@ -149,6 +160,52 @@ public class PostService {
         for (Post post : contents)
             content.add(getCustomMadePost(userDetails, post));
         return content;
+    }
+
+    private ContentDto getCustomMadePost(Post post) {
+
+        // 게시글의 해시태그 가져오기
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(post.getId());
+        List<String> hashtags = new ArrayList<>();
+
+        for (PostHashtag h : postHashtags) {
+            Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No search date"));
+            hashtags.add(ht.getHashtag());
+        }
+
+        List<Likes> likes = post.getLikes();
+        int like_count = likes.size();
+
+        // 게시글의 댓글 가져오기
+        List<Comment> comments = post.getComments();
+        List<CommentDto> commentDtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDto commentDto = CommentDto.builder()
+                    .id(comment.getId())
+                    .nickname(comment.getUser().getNickname())
+                    .content(comment.getContent())
+                    .date(comment.getDate())
+                    .like_count(comment.getLikes().size())
+                    .isLike(false)
+                    .user_type(comment.getUser().getUser_type())
+                    .build();
+            commentDtos.add(commentDto);
+        }
+
+        return ContentDto.builder()
+                .posting_id(post.getId())
+                .nickname(post.getUser().getNickname())
+                .title(post.getTitle())
+                .date(post.getDate())
+                .posting_content(post.getPosting_content())
+                .hashtag(hashtags)
+                .like_count(like_count)
+                .isLike(false)
+                .comments(commentDtos)
+                .comment_count(post.getComments().size())
+                .user_type(post.getUser().getUser_type())
+                .build();
     }
 
     private ContentDto getCustomMadePost(UserDetailsImpl userDetails, Post post) {
@@ -209,7 +266,7 @@ public class PostService {
 
         Set<String> tags = new HashSet<>();
         for (String s : hashtag) {
-            s=s.trim();
+            s = s.trim();
             if (!s.equals("")) tags.add(s);
         }
 
@@ -226,4 +283,6 @@ public class PostService {
             }
         }
     }
+
+
 }
