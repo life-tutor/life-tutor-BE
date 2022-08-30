@@ -245,7 +245,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.addAllowedOrigin("http://localhost:3000");
-        configuration.addAllowedOrigin("http://togetherheyyo.s3-website.ap-northeast-2.amazonaws.com/");
+        configuration.addAllowedOrigin("https://it-ing.co.kr");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
