@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/")
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class UserController {
 
     // 회원 가입
     @PostMapping("signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignupRequestDto signupRequestDto) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid SignupRequestDto signupRequestDto) {
         return userService.registerUser(signupRequestDto);
     }
 
