@@ -214,7 +214,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("GET,/login");
         skipPathList.add("GET,/join");
         skipPathList.add("GET,/post/**");
-//        skipPathList.add("GET,/api/main/**");
+        skipPathList.add("GET,/api/main/postings");
         skipPathList.add("GET,/post");
         skipPathList.add("GET,/api/oauth2/redirect/**");
         // websocket 허용

@@ -17,14 +17,21 @@ public class PostController {
         this.postService = postService;
     }
 
-    @GetMapping("/api/main/postings")
+    @GetMapping("/api/main/user/postings")
     public PostResponseDto getPosts(
             @RequestParam("page") int page,
             @RequestParam("size") int size,
-            @RequestParam("isUser") boolean isUser,
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        return postService.getPosts(page, size, isUser, userDetails);
+        return postService.getPosts(page, size, userDetails);
+    }
+
+    @GetMapping("/api/main/postings")
+    public PostResponseDto getPostsOfNotUser(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size
+    ) {
+        return postService.getPostsOfNotUser(page, size);
     }
 
     @PostMapping("/api/board")
