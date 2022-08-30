@@ -90,13 +90,11 @@ public class PostService {
     @Transactional
     public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
 
-        Sort.Direction direction = Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, "id");
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        String[] tags = hashtag.split(",");
-        Long[] idArr = getDistinctIds(tags);
+        Long[] idArr = getDistinctIds(hashtag);
 
         Page<Post> posts = postRepository.findAll(pageable, idArr);
 
@@ -135,15 +133,13 @@ public class PostService {
         postRepository.deleteById(postingId);
     }
 
-    private Long[] getDistinctIds(String[] tags) {
+    private Long[] getDistinctIds(String hashtag) {
         HashSet<Long> postIds = new HashSet<>();
-        for (String t : tags) {
-            Hashtag tag = hashtagRepository.findByHashtag(t);
-            if (tag == null) throw new IllegalArgumentException("No Search Data.");
-            List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
-            for (PostHashtag postHashtag : postHashtags) {
-                postIds.add(postHashtag.getPost().getId());
-            }
+        Hashtag tag = hashtagRepository.findByHashtag(hashtag);
+        if (tag == null) throw new IllegalArgumentException("No Search Data.");
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
+        for (PostHashtag postHashtag : postHashtags) {
+            postIds.add(postHashtag.getPost().getId());
         }
         int i = 0;
         Long[] idArr = new Long[postIds.size()];
