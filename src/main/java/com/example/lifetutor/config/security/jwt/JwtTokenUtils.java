@@ -20,7 +20,7 @@ public final class JwtTokenUtils {
 
     public static final String CLAIM_EXPIRED_DATE = "EXPIRED_DATE";
     public static final String CLAIM_USER_NAME = "USER_NAME";
-    public static final String JWT_SECRET = "jwt_secret_!@#$%";
+    public static final String JWT_SECRET = "IT_ING!@#!@#!@";
 
     public static String generateJwtToken(UserDetailsImpl userDetails) {
         String token = null;
