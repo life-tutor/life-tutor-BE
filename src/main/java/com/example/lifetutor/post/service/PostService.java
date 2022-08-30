@@ -136,7 +136,7 @@ public class PostService {
     private Long[] getDistinctIds(String hashtag) {
         HashSet<Long> postIds = new HashSet<>();
         Hashtag tag = hashtagRepository.findByHashtag(hashtag);
-        if (tag == null) throw new IllegalArgumentException("No Search Data.");
+        if (tag == null) return new Long[0];
         List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
         for (PostHashtag postHashtag : postHashtags) {
             postIds.add(postHashtag.getPost().getId());
