@@ -24,7 +24,7 @@ public class FormLoginSuccessHandler extends SavedRequestAwareAuthenticationSucc
         // Token 생성
         final String token = JwtTokenUtils.generateJwtToken(userDetails);
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(TOKEN_TYPE+ " " + token,userDetails.getUser().getUsername(),
+        LoginResponseDto loginResponseDto = new LoginResponseDto(userDetails.getUser().getUsername(),
                 userDetails.getUser().getNickname(),
                 userDetails.getUser().getUser_type(),
                 userDetails.getUser().isKakao());
@@ -35,5 +35,4 @@ public class FormLoginSuccessHandler extends SavedRequestAwareAuthenticationSucc
         objectMapper.writeValue(response.getWriter(),loginResponseDto);
 
     }
-
 }
