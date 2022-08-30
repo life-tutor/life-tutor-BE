@@ -45,7 +45,7 @@ public class PostService {
 
     @Transactional
     public PostResponseDto getPosts(int page, int size, UserDetailsImpl userDetails) {
-//        Sort.Direction direction = Sort.Direction.DESC;
+
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -60,7 +60,6 @@ public class PostService {
 
     public PostResponseDto getPostsOfNotUser(int page, int size) {
 
-//        Sort.Direction direction = Sort.Direction.DESC;
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
@@ -69,8 +68,14 @@ public class PostService {
         List<Post> contents = posts.getContent();
 
         List<ContentDto> content = new ArrayList<>();
-        for (int i = 0; i < 5; i++) {
-            content.add(getCustomMadePost(contents.get(i)));
+        int ContentSize = contents.size();
+
+        if (ContentSize >= 5) {
+            for (int i = 0; i < 5; i++)
+                content.add(getCustomMadePost(contents.get(i)));
+        } else {
+            for (Post post : contents)
+                content.add(getCustomMadePost(post));
         }
 
         return new PostResponseDto(content, posts.isLast());
