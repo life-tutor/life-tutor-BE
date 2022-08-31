@@ -4,6 +4,7 @@ import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
 import com.example.lifetutor.room.dto.request.RoomRequestDto;
 import com.example.lifetutor.room.dto.response.ContentResponseDto;
+import com.example.lifetutor.room.dto.response.HashtagDto;
 import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.model.Enter;
 import com.example.lifetutor.room.model.Room;
@@ -21,13 +22,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Transactional
 @Service
+@Transactional
 public class RoomService {
 
     private final RoomRepository roomRepository;
@@ -48,6 +47,17 @@ public class RoomService {
         Pageable pageable = PageRequest.of(page,size);
         Page<Room> rooms = roomRepository.findAllByOrderByIdDesc(pageable);
         return roomResponse(rooms);
+    }
+
+    // 해쉬태그 리스트
+    public List<HashtagDto> searchHashtags(String keyword){
+        notSearch(keyword);
+        List<HashtagDto> result = new ArrayList<>();
+        List<RoomHashtag> hashtags = roomHashtagRepository.findHashtags();
+        if(!keyword.isEmpty() && !hashtags.isEmpty()){
+            result = countHashtag(keyword, hashtags);
+        }
+        return result;
     }
 
     // 채팅방 검색
@@ -141,10 +151,32 @@ public class RoomService {
 
     // 해쉬태그 저장
     public void saveHashtag(String tagStr, Room room){
+        validateHashtag(tagStr);
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
         if(tag == null) tag = new Hashtag(tagStr);
         RoomHashtag roomHashtag = new RoomHashtag(tag,room);
         roomHashtagRepository.save(roomHashtag);
+    }
+
+    // 해쉬태그 중복 count
+    public List<HashtagDto> countHashtag(String keyword, List<RoomHashtag> hashtags){
+        Map<String,Integer> map = new HashMap<>();
+        for(RoomHashtag roomHashtag : hashtags){
+            String hashtag = roomHashtag.getHashtag().getHashtag();
+            if(hashtag.contains(keyword)) map.put(hashtag, map.getOrDefault(hashtag, 0) + 1);
+        }
+        return sortedHashtag(map);
+    }
+
+    // 해쉬태그 정렬
+    public List<HashtagDto> sortedHashtag(Map<String,Integer> map){
+        List<HashtagDto> result = new ArrayList<>();
+        List<Map.Entry<String,Integer>> entries = map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toList());
+        for(Map.Entry<String,Integer> entry : entries){
+            HashtagDto hashtagDto = new HashtagDto(entry.getKey(),entry.getValue());
+            result.add(hashtagDto);
+        }
+        return result;
     }
 
     // 채팅방 validate
@@ -160,5 +192,9 @@ public class RoomService {
     }
     public void notSearch(String hashtag){
         if(hashtag.isEmpty()) throw new IllegalArgumentException("검색어를 입력해주세요.");
+        else validateHashtag(hashtag);
+    }
+    public void validateHashtag(String hashtag){
+        if(hashtag.length() < 2 || hashtag.length() > 6) throw new IllegalArgumentException("2자 ~ 6자까지 입력해주세요.");
     }
 }

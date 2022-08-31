@@ -2,6 +2,7 @@ package com.example.lifetutor.room.controller;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.room.dto.request.RoomRequestDto;
+import com.example.lifetutor.room.dto.response.HashtagDto;
 import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -24,14 +27,18 @@ public class RoomController {
     // 채팅방 조회
     @GetMapping("/main/rooms")
     public RoomResponseDto getRooms(@RequestParam("page") int page, @RequestParam("size") int size){
-        page = page-1;
         return roomService.getRooms(page, size);
+    }
+
+    // 해쉬태그 리스트
+    @GetMapping("/hashtags/rooms")
+    public List<HashtagDto> searchHashtags(@RequestParam("keyword") String keyword){
+        return roomService.searchHashtags(keyword);
     }
 
     // 채팅방 검색
     @GetMapping("/search/rooms")
-    public RoomResponseDto searchRooms(@RequestParam("hash_tag") String hashtag,@RequestParam("page") int page, @RequestParam("size") int size){
-        page = page-1;
+    public RoomResponseDto searchRooms(@RequestParam("hashtag") String hashtag,@RequestParam("page") int page, @RequestParam("size") int size){
         return roomService.searchRooms(hashtag,page,size);
     }
 
@@ -61,11 +68,4 @@ public class RoomController {
         roomService.exitRoom(room_id,user.getUser());
         return new ResponseEntity<>("퇴장",HttpStatus.OK);
     }
-
-    // 채팅방 삭제
-//    @DeleteMapping("/chat/room/{room_id}")
-//    public ResponseEntity<String> deleteRoom(@PathVariable Long room_id, @AuthenticationPrincipal UserDetailsImpl user){
-//        roomService.deleteRoom(room_id,user.getUser());
-//        return new ResponseEntity<>("삭제 성공",HttpStatus.OK);
-//    }
 }
