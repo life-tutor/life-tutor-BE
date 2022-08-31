@@ -2,9 +2,9 @@ name: Spring Boot CI/CD
 
 on:
   push:
-    branches: [ "feature/CICD" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "feature/CICD" ]
+    branches: [ "main" ]
 
 permissions:
   contents: read
