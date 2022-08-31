@@ -53,7 +53,7 @@ public class CommentIntegrationTest {
     }
 
     public HttpEntity<?> getHeader(String username, CommentRequest request){
-        Algorithm ALGORITHM = Algorithm.HMAC256("jwt_secret_!@#$%");
+        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -69,7 +69,7 @@ public class CommentIntegrationTest {
         return new HttpEntity<>(request,requestHeaders);
     }
     public HttpEntity<?> getHeader2(String username){
-        Algorithm ALGORITHM = Algorithm.HMAC256("jwt_secret_!@#$%");
+        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -98,7 +98,7 @@ public class CommentIntegrationTest {
             void test1(){
                 //given
                 long posingId = 999;
-                long commentId = 2;
+                long commentId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
@@ -118,8 +118,8 @@ public class CommentIntegrationTest {
             @DisplayName("작성자 아님")
             void test2(){
                 //given
-                long posingId = 1;
-                long commentId = 2;
+                long posingId = 2;
+                long commentId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
@@ -143,8 +143,8 @@ public class CommentIntegrationTest {
             @DisplayName("삭제 정상")
             void test(){
                 //given
-                long posingId = 1;
-                long commendId = 2;
+                long posingId = 2;
+                long commendId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
@@ -175,7 +175,7 @@ public class CommentIntegrationTest {
             void test1(){
                 //given
                 long postingId = 999;
-                long commentId = 2;
+                long commentId = 3;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
@@ -198,7 +198,7 @@ public class CommentIntegrationTest {
             @DisplayName("댓글 없음")
             void test2(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
                 long commentId = 999;
 
                 CommentRequest request = CommentRequest.builder()
@@ -222,8 +222,8 @@ public class CommentIntegrationTest {
             @DisplayName("null")
             void test3(){
                 //given
-                long postingId = 1;
-                long commentId = 2;
+                long postingId = 2;
+                long commentId = 3;
 
                 CommentRequest request = CommentRequest.builder()
                         .content(null).build();
@@ -246,8 +246,8 @@ public class CommentIntegrationTest {
             @DisplayName("blank")
             void test4(){
                 //given
-                long postingId = 1;
-                long commentId = 2;
+                long postingId = 2;
+                long commentId = 3;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("    ").build();
@@ -270,8 +270,8 @@ public class CommentIntegrationTest {
             @DisplayName("작성자 아님")
             void test5(){
                 //given
-                long postingId = 1;
-                long commentId = 2;
+                long postingId = 2;
+                long commentId = 3;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
@@ -299,8 +299,8 @@ public class CommentIntegrationTest {
             @DisplayName("수정 정상")
             void test(){
                 //given
-                long postingId = 1;
-                long commendId = 2;
+                long postingId = 2;
+                long commendId = 3;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
@@ -353,7 +353,7 @@ public class CommentIntegrationTest {
             @DisplayName("공감 없음")
             void test2(){
                 //given
-                long commentId = 2;
+                long commentId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
@@ -378,7 +378,7 @@ public class CommentIntegrationTest {
             @DisplayName("취소 정상")
             void test(){
                 //given
-                long commentId = 2;
+                long commentId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
@@ -427,7 +427,7 @@ public class CommentIntegrationTest {
             @DisplayName("이미 공감함")
             void test2(){
                 //given
-                long commentId = 2;
+                long commentId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
@@ -451,7 +451,7 @@ public class CommentIntegrationTest {
             @DisplayName("공감 정상")
             void test(){
                 //given
-                long commentId = 2;
+                long commentId = 3;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
@@ -502,7 +502,7 @@ public class CommentIntegrationTest {
             @DisplayName("null")
             void test2(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 CommentRequest request = CommentRequest.builder()
                         .content(null).build();
@@ -524,7 +524,7 @@ public class CommentIntegrationTest {
             @DisplayName("blank")
             void test3(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("    ").build();
@@ -551,7 +551,7 @@ public class CommentIntegrationTest {
             @DisplayName("작성 정상")
             void test(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
