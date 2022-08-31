@@ -22,9 +22,9 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
-      - name: Create Application Property
+      - name: Add Application Property
         run: |
-          echo "spring.security.oauth2.client.registration.kakao.client-id=$KAKAO_CLIENT_ID" > application.properties \
+          echo "spring.security.oauth2.client.registration.kakao.client-id=$KAKAO_CLIENT_ID" >> application.properties \
           echo "spring.security.oauth2.client.registration.kakao.client-secret=$KAKAO_CLIENT_SECRET" >> application.properties \
           echo "spring.security.oauth2.client.registration.kakao.redirect-uri=$KAKAO_REDIRECT_URI" >> application.properties
         env:
