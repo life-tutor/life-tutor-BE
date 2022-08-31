@@ -2,6 +2,11 @@ package com.example.lifetutor.integration;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.example.lifetutor.comment.model.Comment;
+import com.example.lifetutor.comment.repository.CommentRepository;
+import com.example.lifetutor.post.model.Post;
+import com.example.lifetutor.post.repository.PostRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -13,15 +18,27 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class LikesIntegrationTest {
+    long postingId = 0;
 
     @Autowired
     TestRestTemplate testRestTemplate;
+
+    @BeforeEach
+    public void getId(
+            @Autowired PostRepository postRepository
+    ){
+        List<Post> posts = postRepository.findAll();
+        for(Post post : posts){
+            postingId = post.getId();
+        }
+    }
 
     public HttpEntity<?> getHeader(String username){
         Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
@@ -52,13 +69,13 @@ public class LikesIntegrationTest {
             @DisplayName("게시글 없음")
             void test1(){
                 //given
-                long postingId = 999;
+                long postId = 999;
 
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+postingId+"/likes",
+                                "/api/board/"+postId+"/likes",
                                 HttpMethod.DELETE,
                                 requestEntity,
                                 String.class
@@ -72,8 +89,6 @@ public class LikesIntegrationTest {
             @DisplayName("공감 없음")
             void test2(){
                 //given
-                long postingId = 2;
-
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -97,8 +112,6 @@ public class LikesIntegrationTest {
             @DisplayName("취소 정상")
             void test(){
                 //given
-                long postingId = 2;
-
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -127,13 +140,13 @@ public class LikesIntegrationTest {
             @DisplayName("게시글 없음")
             void test1(){
                 //given
-                long postingId = 999;
+                long postId = 999;
 
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
-                                "/api/board/"+postingId+"/likes",
+                                "/api/board/"+postId+"/likes",
                                 requestEntity,
                                 String.class
                         );
@@ -146,8 +159,6 @@ public class LikesIntegrationTest {
             @DisplayName("이미 공감함")
             void test2(){
                 //given
-                long postingId = 2;
-
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -170,8 +181,6 @@ public class LikesIntegrationTest {
             @DisplayName("공감 정상")
             void test(){
                 //given
-                long postingId = 2;
-
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
