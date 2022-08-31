@@ -2,12 +2,11 @@ package com.example.lifetutor.integration;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.example.lifetutor.room.model.Room;
+import com.example.lifetutor.room.repository.RoomRepository;
 import lombok.Builder;
 import lombok.Getter;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -23,9 +22,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class RoomIntegrationTest {
+    long roomId = 0;
 
     @Autowired
     TestRestTemplate testRestTemplate;
+
+    @BeforeEach
+    public void getId(
+            @Autowired RoomRepository roomRepository
+    ){
+        java.util.List<Room> rooms = roomRepository.findAll();
+        for(Room room : rooms){
+            roomId = room.getId();
+        }
+    }
 
     public HttpEntity<?> getHeader(String username, RoomRequest request){
         Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
@@ -71,13 +81,13 @@ public class RoomIntegrationTest {
             @Test
             @DisplayName("room notFound")
             void test(){
+                long room = 999;
                 //given
-                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/chat/room/"+roomId+"/exit",
+                                "/api/chat/room/"+room+"/exit",
                                 HttpMethod.DELETE,
                                 requestEntity,
                                 String.class
@@ -96,7 +106,6 @@ public class RoomIntegrationTest {
             @DisplayName("guest1 퇴장")
             void test1(){
                 //given
-                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -115,7 +124,6 @@ public class RoomIntegrationTest {
             @DisplayName("host 퇴장")
             void test2(){
                 //given
-                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -144,7 +152,6 @@ public class RoomIntegrationTest {
             @DisplayName("guest2 입장")
             void test(){
                 //given
-                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test2");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -167,7 +174,6 @@ public class RoomIntegrationTest {
             @DisplayName("host 입장")
             void test1(){
                 //given
-                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -185,7 +191,6 @@ public class RoomIntegrationTest {
             @DisplayName("guest1 입장")
             void test2(){
                 //given
-                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate
