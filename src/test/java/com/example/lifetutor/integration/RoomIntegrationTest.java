@@ -28,7 +28,7 @@ public class RoomIntegrationTest {
     TestRestTemplate testRestTemplate;
 
     public HttpEntity<?> getHeader(String username, RoomRequest request){
-        Algorithm ALGORITHM = Algorithm.HMAC256("jwt_secret_!@#$%");
+        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -44,7 +44,7 @@ public class RoomIntegrationTest {
         return new HttpEntity<>(request,requestHeaders);
     }
     public HttpEntity<?> getHeader2(String username){
-        Algorithm ALGORITHM = Algorithm.HMAC256("jwt_secret_!@#$%");
+        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -72,7 +72,7 @@ public class RoomIntegrationTest {
             @DisplayName("room notFound")
             void test(){
                 //given
-                long roomId = 5;
+                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -96,7 +96,7 @@ public class RoomIntegrationTest {
             @DisplayName("guest1 퇴장")
             void test1(){
                 //given
-                long roomId = 5;
+                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -115,7 +115,7 @@ public class RoomIntegrationTest {
             @DisplayName("host 퇴장")
             void test2(){
                 //given
-                long roomId = 5;
+                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -144,7 +144,7 @@ public class RoomIntegrationTest {
             @DisplayName("guest2 입장")
             void test(){
                 //given
-                long roomId = 5;
+                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test2");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -167,7 +167,7 @@ public class RoomIntegrationTest {
             @DisplayName("host 입장")
             void test1(){
                 //given
-                long roomId = 5;
+                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -185,7 +185,7 @@ public class RoomIntegrationTest {
             @DisplayName("guest1 입장")
             void test2(){
                 //given
-                long roomId = 5;
+                long roomId = 6;
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate

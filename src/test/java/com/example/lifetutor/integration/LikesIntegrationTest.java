@@ -24,7 +24,7 @@ public class LikesIntegrationTest {
     TestRestTemplate testRestTemplate;
 
     public HttpEntity<?> getHeader(String username){
-        Algorithm ALGORITHM = Algorithm.HMAC256("jwt_secret_!@#$%");
+        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -72,7 +72,7 @@ public class LikesIntegrationTest {
             @DisplayName("공감 없음")
             void test2(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
@@ -97,7 +97,7 @@ public class LikesIntegrationTest {
             @DisplayName("취소 정상")
             void test(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
@@ -146,7 +146,7 @@ public class LikesIntegrationTest {
             @DisplayName("이미 공감함")
             void test2(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
@@ -170,7 +170,7 @@ public class LikesIntegrationTest {
             @DisplayName("공감 정상")
             void test(){
                 //given
-                long postingId = 1;
+                long postingId = 2;
 
                 HttpEntity<?> requestEntity = getHeader("username");
                 //when
