@@ -11,6 +11,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
@@ -25,7 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class LikesIntegrationTest {
-    long postingId = 0;
+    private long postingId = 0;
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     @Autowired
     TestRestTemplate testRestTemplate;
@@ -39,9 +42,8 @@ public class LikesIntegrationTest {
             postingId = post.getId();
         }
     }
-
-    public HttpEntity<?> getHeader(String username){
-        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
+    public HttpHeaders headerToken(String username){
+        Algorithm ALGORITHM = Algorithm.HMAC256(secretKey);
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -53,8 +55,7 @@ public class LikesIntegrationTest {
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         requestHeaders.add("Authorization",authorizationHeader);
-
-        return new HttpEntity<>(requestHeaders);
+        return requestHeaders;
     }
 
     @Nested
@@ -71,7 +72,8 @@ public class LikesIntegrationTest {
                 //given
                 long postId = 999;
 
-                HttpEntity<?> requestEntity = getHeader("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -89,7 +91,8 @@ public class LikesIntegrationTest {
             @DisplayName("공감 없음")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader("username");
+                HttpHeaders headerToken = headerToken("test");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -112,7 +115,8 @@ public class LikesIntegrationTest {
             @DisplayName("취소 정상")
             void test(){
                 //given
-                HttpEntity<?> requestEntity = getHeader("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -142,7 +146,8 @@ public class LikesIntegrationTest {
                 //given
                 long postId = 999;
 
-                HttpEntity<?> requestEntity = getHeader("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -159,7 +164,8 @@ public class LikesIntegrationTest {
             @DisplayName("이미 공감함")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -181,7 +187,8 @@ public class LikesIntegrationTest {
             @DisplayName("공감 정상")
             void test(){
                 //given
-                HttpEntity<?> requestEntity = getHeader("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(

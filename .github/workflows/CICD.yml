@@ -2,9 +2,9 @@ name: Spring Boot CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 permissions:
   contents: read
@@ -21,6 +21,15 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
+
+      - name: Create test.Properties
+        run: touch ./src/test/resources/application-test.properties
+
+      - name: Add Application Property
+        run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.properties
+
+      - name: Add Test Application Property
+        run: echo "${{ secrets.TEST_PROPERTIES }}" > ./src/test/resources/application-test.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew

@@ -3,9 +3,12 @@ package com.example.lifetutor.config.security.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.example.lifetutor.config.security.UserDetailsImpl;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.Date;
 
+@Component
 public final class JwtTokenUtils {
 
     private static final int SEC = 1;
@@ -20,7 +23,12 @@ public final class JwtTokenUtils {
 
     public static final String CLAIM_EXPIRED_DATE = "EXPIRED_DATE";
     public static final String CLAIM_USER_NAME = "USER_NAME";
-    public static final String JWT_SECRET = "IT_ING!@#!@#!@";
+    public static String JWT_SECRET;
+
+    @Value("${jwt.secret}")
+    public void setJwtSecret(String jwtSecret) {
+        JWT_SECRET = jwtSecret;
+    }
 
     public static String generateJwtToken(UserDetailsImpl userDetails) {
         String token = null;
