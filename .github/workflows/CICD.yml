@@ -23,7 +23,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Create test.Properties
-        run: mkdir ./src/test/resources/application-test.properties
+        run: touch ./src/test/resources/application-test.properties
 
       - name: Add Application Property
         run: |
