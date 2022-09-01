@@ -1,7 +1,6 @@
 package com.example.lifetutor.massage.dto.request;
 
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
 public class MessageRequestDto {
@@ -9,7 +8,7 @@ public class MessageRequestDto {
         TEXT, IMG
     }
     public enum Enter{
-        ENTER,COMM
+        ENTER, COMM, EXIT
     }
     private Enter enter;
     private MessageType messageType;
