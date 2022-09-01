@@ -8,13 +8,13 @@ import java.util.List;
 
 @Getter
 public class ContentResponseDto {
-    private Long roomId;
-    private String username;
-    private String nickname;
-    private Role user_type;
-    private String title;
-    private boolean isfull;
-    private List<String> hashtag;
+    private final Long roomId;
+    private final String username;
+    private final String nickname;
+    private final Role user_type;
+    private final String title;
+    private final boolean isfull;
+    private final List<String> hashtag;
 
     public ContentResponseDto(Room room, List<String> hashtag) {
         this.roomId = room.getId();

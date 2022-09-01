@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
@@ -30,8 +31,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class CommentIntegrationTest {
-    static long postingId = 0;
-    long commentId = 0;
+    private static long postingId = 0;
+    private long commentId = 0;
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     @Autowired
     TestRestTemplate testRestTemplate;
@@ -66,9 +69,8 @@ public class CommentIntegrationTest {
             commentId = comment.getId();
         }
     }
-
-    public HttpEntity<?> getHeader(String username, CommentRequest request){
-        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
+    public HttpHeaders headerToken(String username){
+        Algorithm ALGORITHM = Algorithm.HMAC256(secretKey);
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -80,24 +82,7 @@ public class CommentIntegrationTest {
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         requestHeaders.add("Authorization",authorizationHeader);
-
-        return new HttpEntity<>(request,requestHeaders);
-    }
-    public HttpEntity<?> getHeader2(String username){
-        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
-        String token = JWT.create()
-                .withIssuer("sparta")
-                .withClaim("USER_NAME", username)
-                .withClaim("EXPIRED_DATE", Instant.now().getEpochSecond() + 60*60)
-                .sign(ALGORITHM);
-        String authorizationHeader = "Bearer " + token;
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        requestHeaders.add("Authorization",authorizationHeader);
-
-        return new HttpEntity<>(requestHeaders);
+        return requestHeaders;
     }
     @Nested
     @DisplayName("댓글 삭제")
@@ -112,8 +97,8 @@ public class CommentIntegrationTest {
             void test1(){
                 //given
                 long postId = 999;
-
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -131,7 +116,8 @@ public class CommentIntegrationTest {
             @DisplayName("작성자 아님")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("test");
+                HttpHeaders headerToken = headerToken("test");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -153,7 +139,8 @@ public class CommentIntegrationTest {
             @DisplayName("삭제 정상")
             void test(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -185,7 +172,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -208,7 +196,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -229,7 +218,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content(null).build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -250,7 +240,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("    ").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -271,7 +262,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
-                HttpEntity<?> requestEntity = getHeader("test",request);
+                HttpHeaders headerToken = headerToken("test");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -297,7 +289,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -327,7 +320,8 @@ public class CommentIntegrationTest {
                 //given
                 long commId = 999;
 
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -345,7 +339,8 @@ public class CommentIntegrationTest {
             @DisplayName("공감 없음")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -368,7 +363,8 @@ public class CommentIntegrationTest {
             @DisplayName("취소 정상")
             void test(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -398,7 +394,8 @@ public class CommentIntegrationTest {
                 //given
                 long commId = 999;
 
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -415,7 +412,8 @@ public class CommentIntegrationTest {
             @DisplayName("이미 공감함")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -437,7 +435,8 @@ public class CommentIntegrationTest {
             @DisplayName("공감 정상")
             void test(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -469,7 +468,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -489,7 +489,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content(null).build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -509,7 +510,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("    ").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -534,7 +536,8 @@ public class CommentIntegrationTest {
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
