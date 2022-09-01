@@ -24,7 +24,6 @@ jobs:
 
       - name: Create test.Properties
         run: touch ./src/test/resources/application-test.properties
-        shell: bash
 
       - name: Add Application Property
         run: echo "${{ secrets.PROPERTIES }}" > ./src/main/resources/application.properties
