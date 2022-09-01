@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class CommentIntegrationTest {
     private static long postingId = 0;
     private long commentId = 0;
-    @Value("${secret-key}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     @Autowired

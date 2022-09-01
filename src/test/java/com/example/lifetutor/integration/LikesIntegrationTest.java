@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ActiveProfiles("test")
 public class LikesIntegrationTest {
     private long postingId = 0;
-    @Value("${secret-key}")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     @Autowired
