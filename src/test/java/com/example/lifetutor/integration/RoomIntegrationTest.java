@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
@@ -22,7 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class RoomIntegrationTest {
-    long roomId = 0;
+    private long roomId = 0;
+    @Value("${secret-key}")
+    private String secretKey;
 
     @Autowired
     TestRestTemplate testRestTemplate;
@@ -36,9 +39,8 @@ public class RoomIntegrationTest {
             roomId = room.getId();
         }
     }
-
-    public HttpEntity<?> getHeader(String username, RoomRequest request){
-        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
+    public HttpHeaders headerToken(String username){
+        Algorithm ALGORITHM = Algorithm.HMAC256(secretKey);
         String token = JWT.create()
                 .withIssuer("sparta")
                 .withClaim("USER_NAME", username)
@@ -50,24 +52,7 @@ public class RoomIntegrationTest {
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         requestHeaders.add("Authorization",authorizationHeader);
-
-        return new HttpEntity<>(request,requestHeaders);
-    }
-    public HttpEntity<?> getHeader2(String username){
-        Algorithm ALGORITHM = Algorithm.HMAC256("IT_ING!@#!@#!@");
-        String token = JWT.create()
-                .withIssuer("sparta")
-                .withClaim("USER_NAME", username)
-                .withClaim("EXPIRED_DATE", Instant.now().getEpochSecond() + 60*60)
-                .sign(ALGORITHM);
-        String authorizationHeader = "Bearer " + token;
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-        requestHeaders.add("Authorization",authorizationHeader);
-
-        return new HttpEntity<>(requestHeaders);
+        return requestHeaders;
     }
 
     @Nested
@@ -83,7 +68,8 @@ public class RoomIntegrationTest {
             void test(){
                 long room = 999;
                 //given
-                HttpEntity<?> requestEntity = getHeader2("test");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -106,7 +92,8 @@ public class RoomIntegrationTest {
             @DisplayName("guest1 퇴장")
             void test1(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("test");
+                HttpHeaders headerToken = headerToken("test");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -124,7 +111,8 @@ public class RoomIntegrationTest {
             @DisplayName("host 퇴장")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
@@ -152,7 +140,8 @@ public class RoomIntegrationTest {
             @DisplayName("guest2 입장")
             void test(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("test2");
+                HttpHeaders headerToken = headerToken("test2");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -174,7 +163,8 @@ public class RoomIntegrationTest {
             @DisplayName("host 입장")
             void test1(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("username");
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -191,7 +181,8 @@ public class RoomIntegrationTest {
             @DisplayName("guest1 입장")
             void test2(){
                 //given
-                HttpEntity<?> requestEntity = getHeader2("test");
+                HttpHeaders headerToken = headerToken("test");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -229,7 +220,8 @@ public class RoomIntegrationTest {
                 RoomRequest request = RoomRequest.builder()
                         .title(null).hashtag(new ArrayList<>()).build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -248,7 +240,8 @@ public class RoomIntegrationTest {
                 RoomRequest request = RoomRequest.builder()
                         .title("   ").hashtag(new ArrayList<>()).build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
@@ -273,7 +266,8 @@ public class RoomIntegrationTest {
                 RoomRequest request = RoomRequest.builder()
                         .title("title").hashtag(new ArrayList<>()).build();
 
-                HttpEntity<?> requestEntity = getHeader("username",request);
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
