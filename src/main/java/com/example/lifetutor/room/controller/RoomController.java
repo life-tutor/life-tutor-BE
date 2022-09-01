@@ -27,18 +27,20 @@ public class RoomController {
     // 채팅방 조회
     @GetMapping("/main/rooms")
     public RoomResponseDto getRooms(@RequestParam("page") int page, @RequestParam("size") int size){
+        page = page-1;
         return roomService.getRooms(page, size);
     }
 
     // 해쉬태그 리스트
-    @GetMapping("/hashtags/rooms")
-    public List<HashtagDto> searchHashtags(@RequestParam("keyword") String keyword){
-        return roomService.searchHashtags(keyword);
-    }
+//    @GetMapping("/hashtags/rooms")
+//    public List<HashtagDto> searchHashtags(@RequestParam("keyword") String keyword){
+//        return roomService.searchHashtags(keyword);
+//    }
 
     // 채팅방 검색
     @GetMapping("/search/rooms")
     public RoomResponseDto searchRooms(@RequestParam("hashtag") String hashtag,@RequestParam("page") int page, @RequestParam("size") int size){
+        page = page-1;
         return roomService.searchRooms(hashtag,page,size);
     }
 

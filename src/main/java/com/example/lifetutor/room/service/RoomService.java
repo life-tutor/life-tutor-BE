@@ -50,15 +50,15 @@ public class RoomService {
     }
 
     // 해쉬태그 리스트
-    public List<HashtagDto> searchHashtags(String keyword){
-        notSearch(keyword);
-        List<HashtagDto> result = new ArrayList<>();
-        List<RoomHashtag> hashtags = roomHashtagRepository.findHashtags();
-        if(!keyword.isEmpty() && !hashtags.isEmpty()){
-            result = countHashtag(keyword, hashtags);
-        }
-        return result;
-    }
+//    public List<HashtagDto> searchHashtags(String keyword){
+//        notSearch(keyword);
+//        List<HashtagDto> result = new ArrayList<>();
+//        List<RoomHashtag> hashtags = roomHashtagRepository.findHashtags();
+//        if(!keyword.isEmpty() && !hashtags.isEmpty()){
+//            result = countHashtag(keyword, hashtags);
+//        }
+//        return result;
+//    }
 
     // 채팅방 검색
     public RoomResponseDto searchRooms(String hashtag,int page,int size){
