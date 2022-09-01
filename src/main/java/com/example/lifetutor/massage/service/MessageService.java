@@ -2,17 +2,14 @@ package com.example.lifetutor.massage.service;
 
 import com.example.lifetutor.massage.dto.request.MessageRequestDto;
 import com.example.lifetutor.massage.dto.response.MessageResponseDto;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
-@Transactional
 @Service
 public class MessageService {
     private final SimpMessageSendingOperations sendingOperations;

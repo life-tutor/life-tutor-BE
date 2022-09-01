@@ -2,6 +2,8 @@ package com.example.lifetutor.integration;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.example.lifetutor.comment.model.Comment;
+import com.example.lifetutor.comment.repository.CommentRepository;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
@@ -28,6 +30,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public class CommentIntegrationTest {
+    static long postingId = 0;
+    long commentId = 0;
 
     @Autowired
     TestRestTemplate testRestTemplate;
@@ -50,6 +54,17 @@ public class CommentIntegrationTest {
         );
         Post post = new Post(postRequestDto);
         postRepository.save(post);
+        postingId = post.getId();
+    }
+
+    @BeforeEach
+    public void getCommentId(
+            @Autowired CommentRepository commentRepository
+    ){
+        List<Comment> comments = commentRepository.findAll();
+        for(Comment comment : comments){
+            commentId = comment.getId();
+        }
     }
 
     public HttpEntity<?> getHeader(String username, CommentRequest request){
@@ -84,7 +99,6 @@ public class CommentIntegrationTest {
 
         return new HttpEntity<>(requestHeaders);
     }
-
     @Nested
     @DisplayName("댓글 삭제")
     class Delete{
@@ -97,14 +111,13 @@ public class CommentIntegrationTest {
             @DisplayName("게시글 없음")
             void test1(){
                 //given
-                long posingId = 999;
-                long commentId = 3;
+                long postId = 999;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+posingId+"/comment/"+commentId,
+                                "/api/board/"+postId+"/comment/"+commentId,
                                 HttpMethod.DELETE,
                                 requestEntity,
                                 String.class
@@ -118,14 +131,11 @@ public class CommentIntegrationTest {
             @DisplayName("작성자 아님")
             void test2(){
                 //given
-                long posingId = 2;
-                long commentId = 3;
-
                 HttpEntity<?> requestEntity = getHeader2("test");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+posingId+"/comment/"+commentId,
+                                "/api/board/"+postingId+"/comment/"+commentId,
                                 HttpMethod.DELETE,
                                 requestEntity,
                                 String.class
@@ -143,14 +153,11 @@ public class CommentIntegrationTest {
             @DisplayName("삭제 정상")
             void test(){
                 //given
-                long posingId = 2;
-                long commendId = 3;
-
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+posingId+"/comment/"+commendId,
+                                "/api/board/"+postingId+"/comment/"+commentId,
                                 HttpMethod.DELETE,
                                 requestEntity,
                                 String.class
@@ -174,9 +181,7 @@ public class CommentIntegrationTest {
             @DisplayName("게시글 없음")
             void test1(){
                 //given
-                long postingId = 999;
-                long commentId = 3;
-
+                long postId = 999;
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
@@ -184,7 +189,7 @@ public class CommentIntegrationTest {
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+postingId+"/comment/"+commentId,
+                                "/api/board/"+postId+"/comment/"+commentId,
                                 HttpMethod.PUT,
                                 requestEntity,
                                 String.class
@@ -198,8 +203,7 @@ public class CommentIntegrationTest {
             @DisplayName("댓글 없음")
             void test2(){
                 //given
-                long postingId = 2;
-                long commentId = 999;
+                long commId = 999;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
@@ -208,7 +212,7 @@ public class CommentIntegrationTest {
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+postingId+"/comment/"+commentId,
+                                "/api/board/"+postingId+"/comment/"+commId,
                                 HttpMethod.PUT,
                                 requestEntity,
                                 String.class
@@ -222,9 +226,6 @@ public class CommentIntegrationTest {
             @DisplayName("null")
             void test3(){
                 //given
-                long postingId = 2;
-                long commentId = 3;
-
                 CommentRequest request = CommentRequest.builder()
                         .content(null).build();
 
@@ -246,9 +247,6 @@ public class CommentIntegrationTest {
             @DisplayName("blank")
             void test4(){
                 //given
-                long postingId = 2;
-                long commentId = 3;
-
                 CommentRequest request = CommentRequest.builder()
                         .content("    ").build();
 
@@ -270,9 +268,6 @@ public class CommentIntegrationTest {
             @DisplayName("작성자 아님")
             void test5(){
                 //given
-                long postingId = 2;
-                long commentId = 3;
-
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
@@ -299,9 +294,6 @@ public class CommentIntegrationTest {
             @DisplayName("수정 정상")
             void test(){
                 //given
-                long postingId = 2;
-                long commendId = 3;
-
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
@@ -309,7 +301,7 @@ public class CommentIntegrationTest {
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/board/"+postingId+"/comment/"+commendId,
+                                "/api/board/"+postingId+"/comment/"+commentId,
                                 HttpMethod.PUT,
                                 requestEntity,
                                 String.class
@@ -333,13 +325,13 @@ public class CommentIntegrationTest {
             @DisplayName("댓글 없음")
             void test1(){
                 //given
-                long commentId = 999;
+                long commId = 999;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .exchange(
-                                "/api/comment/"+commentId+"/likes",
+                                "/api/comment/"+commId+"/likes",
                                 HttpMethod.DELETE,
                                 requestEntity,
                                 String.class
@@ -353,8 +345,6 @@ public class CommentIntegrationTest {
             @DisplayName("공감 없음")
             void test2(){
                 //given
-                long commentId = 3;
-
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -378,8 +368,6 @@ public class CommentIntegrationTest {
             @DisplayName("취소 정상")
             void test(){
                 //given
-                long commentId = 3;
-
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -408,13 +396,13 @@ public class CommentIntegrationTest {
             @DisplayName("댓글 없음")
             void test1(){
                 //given
-                long commentId = 999;
+                long commId = 999;
 
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
-                                "/api/comment/"+commentId+"/likes",
+                                "/api/comment/"+commId+"/likes",
                                 requestEntity,
                                 String.class
                         );
@@ -427,8 +415,6 @@ public class CommentIntegrationTest {
             @DisplayName("이미 공감함")
             void test2(){
                 //given
-                long commentId = 3;
-
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -451,8 +437,6 @@ public class CommentIntegrationTest {
             @DisplayName("공감 정상")
             void test(){
                 //given
-                long commentId = 3;
-
                 HttpEntity<?> requestEntity = getHeader2("username");
                 //when
                 ResponseEntity<String> response = testRestTemplate
@@ -480,7 +464,7 @@ public class CommentIntegrationTest {
             @DisplayName("게시글 없음")
             void test1(){
                 //given
-                long postingId = 999;
+                long postId = 999;
 
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
@@ -489,7 +473,7 @@ public class CommentIntegrationTest {
                 //when
                 ResponseEntity<String> response = testRestTemplate
                         .postForEntity(
-                                "/api/board/"+postingId+"/comment",
+                                "/api/board/"+postId+"/comment",
                                 requestEntity,
                                 String.class
                         );
@@ -502,8 +486,6 @@ public class CommentIntegrationTest {
             @DisplayName("null")
             void test2(){
                 //given
-                long postingId = 2;
-
                 CommentRequest request = CommentRequest.builder()
                         .content(null).build();
 
@@ -524,8 +506,6 @@ public class CommentIntegrationTest {
             @DisplayName("blank")
             void test3(){
                 //given
-                long postingId = 2;
-
                 CommentRequest request = CommentRequest.builder()
                         .content("    ").build();
 
@@ -551,8 +531,6 @@ public class CommentIntegrationTest {
             @DisplayName("작성 정상")
             void test(){
                 //given
-                long postingId = 2;
-
                 CommentRequest request = CommentRequest.builder()
                         .content("content").build();
 
@@ -574,6 +552,6 @@ public class CommentIntegrationTest {
     @Getter
     @Builder
     static class CommentRequest{
-        String content;
+        private String content;
     }
 }
