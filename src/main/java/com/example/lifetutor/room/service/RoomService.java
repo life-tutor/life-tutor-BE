@@ -118,12 +118,15 @@ public class RoomService {
 
     // 채팅방 퇴장
     public void exitRoom(Long room_id, User user){
-        Room room = foundRoom(room_id);
-        String host = room.getUser().getUsername();
-        if(host.equals(user.getUsername())) deleteRoom(room_id,user);
-        else{
-            Enter exitUser = enterRepository.findByUser(user);
-            enterRepository.delete(exitUser);
+//        Room room = foundRoom(room_id);
+        Room room = roomRepository.findById(room_id).orElse(null);
+        if(room != null){
+            String host = room.getUser().getUsername();
+            if(host.equals(user.getUsername())) deleteRoom(room_id,user);
+            else{
+                Enter exitUser = enterRepository.findByUser(user);
+                enterRepository.delete(exitUser);
+            }
         }
     }
 
