@@ -63,7 +63,7 @@ public class RoomIntegrationTest {
         @DisplayName("실패")
         class Fail{
 
-            @Test
+            @Test @Disabled
             @DisplayName("room notFound")
             void test(){
                 long room = 999;
