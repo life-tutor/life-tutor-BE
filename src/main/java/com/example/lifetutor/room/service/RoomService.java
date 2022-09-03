@@ -86,16 +86,13 @@ public class RoomService {
         roomRepository.save(room);
         if(!requestDto.getHashtag().isEmpty()){
             Set<String> tags = new LinkedHashSet<>();
-            List<RoomHashtag> roomHashtags = new ArrayList<>();
             for(String hashtag : requestDto.getHashtag()){
                 hashtag = hashtag.trim();
                 if(!hashtag.isEmpty()) tags.add(hashtag);
             }
             for(String tag : tags){
-                RoomHashtag roomHashtag = saveHashtag(tag,room);
-                roomHashtags.add(roomHashtag);
+                saveHashtag(tag,room);
             }
-            roomHashtagRepository.saveAll(roomHashtags);
         }
         return new ResponseEntity<>(room.getId().toString(), HttpStatus.CREATED);
     }
@@ -115,12 +112,9 @@ public class RoomService {
             }
         }
         if(!requestDto.getHashtag().isEmpty()){
-            List<RoomHashtag> roomHashtags = new ArrayList<>();
             for(String tagStr : requestDto.getHashtag()){
-                RoomHashtag roomHashtag = saveHashtag(tagStr,room);
-                roomHashtags.add(roomHashtag);
+                saveHashtag(tagStr,room);
             }
-            roomHashtagRepository.saveAll(roomHashtags);
         }
     }
 
@@ -171,12 +165,12 @@ public class RoomService {
     }
 
     // 해쉬태그 저장
-    public RoomHashtag saveHashtag(String tagStr, Room room){
+    public void saveHashtag(String tagStr, Room room){
         validateHashtag(tagStr);
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
         if(tag == null) tag = new Hashtag(tagStr);
-        return new RoomHashtag(tag,room);
-//        roomHashtagRepository.save(roomHashtag);
+        RoomHashtag roomHashtag =  new RoomHashtag(tag,room);
+        roomHashtagRepository.save(roomHashtag);
     }
 
     // 해쉬태그 중복 count
