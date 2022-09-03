@@ -21,6 +21,7 @@ public class Enter {
     public Enter(User user, Room room){
         this.user = user;
         this.room = room;
+        if(!room.getEnters().contains(this)) room.getEnters().add(this);
     }
 
     public User getUser() {
