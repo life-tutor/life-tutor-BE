@@ -86,13 +86,16 @@ public class RoomService {
         roomRepository.save(room);
         if(!requestDto.getHashtag().isEmpty()){
             Set<String> tags = new LinkedHashSet<>();
+            List<RoomHashtag> roomHashtags = new ArrayList<>();
             for(String hashtag : requestDto.getHashtag()){
                 hashtag = hashtag.trim();
                 if(!hashtag.isEmpty()) tags.add(hashtag);
             }
             for(String tag : tags){
-                saveHashtag(tag,room);
+                RoomHashtag roomHashtag = saveHashtag(tag,room);
+                roomHashtags.add(roomHashtag);
             }
+            roomHashtagRepository.saveAll(roomHashtags);
         }
         return new ResponseEntity<>(room.getId().toString(), HttpStatus.CREATED);
     }
@@ -103,18 +106,24 @@ public class RoomService {
         // 작성자 확인
         room.validateUser(user);
         isEmpty(requestDto);
-        if(room.getEnters().size() == 1) room.update(requestDto);
+        if(room.getEnters().size() < 2) room.update(requestDto);
         else throw new IllegalArgumentException("채팅방에 게스트가 입장한 후엔 수정이 불가능합니다.");
         // 해쉬태그는 추가할 수도 있으므로 삭제 후 다시 작성
-        if(!room.getHashtags().isEmpty()){
-            for(RoomHashtag roomHashtag : room.getHashtags()){
-                roomHashtagRepository.deleteById(roomHashtag.getId());
+        List<RoomHashtag> roomHashtags = roomHashtagRepository.findByRoom(room);
+        if(!roomHashtags.isEmpty()){
+            for(RoomHashtag roomHashtag : roomHashtags){
+                roomHashtag.getHashtag().getRoomHashtags().remove(roomHashtag);
             }
+            roomHashtagRepository.deleteAll(roomHashtags);
         }
+        roomHashtags.clear();
         if(!requestDto.getHashtag().isEmpty()){
+//            List<RoomHashtag> roomHashtags = new ArrayList<>();
             for(String tagStr : requestDto.getHashtag()){
-                saveHashtag(tagStr,room);
+                RoomHashtag roomHashtag = saveHashtag(tagStr,room);
+                roomHashtags.add(roomHashtag);
             }
+            roomHashtagRepository.saveAll(roomHashtags);
         }
     }
 
@@ -165,12 +174,12 @@ public class RoomService {
     }
 
     // 해쉬태그 저장
-    public void saveHashtag(String tagStr, Room room){
+    public RoomHashtag saveHashtag(String tagStr, Room room){
         validateHashtag(tagStr);
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
         if(tag == null) tag = new Hashtag(tagStr);
-        RoomHashtag roomHashtag = new RoomHashtag(tag,room);
-        roomHashtagRepository.save(roomHashtag);
+        return new RoomHashtag(tag,room);
+//        roomHashtagRepository.save(roomHashtag);
     }
 
     // 해쉬태그 중복 count
