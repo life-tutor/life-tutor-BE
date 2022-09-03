@@ -1,15 +1,12 @@
 package com.example.lifetutor.user.service;
 
-import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.comment.repository.CommentRepository;
-import com.example.lifetutor.config.security.UserDetailsServiceImpl;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
 import com.example.lifetutor.hashtag.repository.PostHashtagRepository;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
-import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyPasswordRequestDto;
@@ -125,7 +122,7 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<?> updateMyInfo(UpdateMyInfoRequestDto requestDto, User user) {
-        if(requestDto.getNickname() == null && requestDto.getNickname().equals(""))
+        if(requestDto.getNickname() == null || requestDto.getNickname().equals(""))
             return new ResponseEntity<>("닉네임을 입력해주세요.", HttpStatus.valueOf(400));
 
         user.updateMyInfo(requestDto);
@@ -137,10 +134,10 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<?> updateMyPassword(UpdateMyPasswordRequestDto requestDto, User user) {
-        if(user.getPassword() == null && user.getPassword().equals(""))
+        if(user.getPassword() == null || user.getPassword().equals(""))
             return new ResponseEntity<>("비밀번호를 입력해주세요.", HttpStatus.valueOf(400));
 
-        if(requestDto.getPassword() == null && requestDto.getPassword().equals("") && requestDto.getConfirmChangePassword() == null && requestDto.getConfirmChangePassword().equals(""))
+        if(requestDto.getPassword() == null || requestDto.getPassword().equals("") || requestDto.getConfirmChangePassword() == null || requestDto.getConfirmChangePassword().equals(""))
             return new ResponseEntity<>("비밀번호를 입력해주세요.", HttpStatus.valueOf(400));
 
         if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
