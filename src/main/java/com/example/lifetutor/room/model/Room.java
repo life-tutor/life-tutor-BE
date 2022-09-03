@@ -4,6 +4,7 @@ import com.example.lifetutor.room.dto.request.RoomRequestDto;
 import com.example.lifetutor.user.model.User;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -20,10 +21,10 @@ public class Room {
     private String title;
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-    private List<Enter> enters;
+    private final List<Enter> enters = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
-    private List<RoomHashtag> hashtags;
+    private final List<RoomHashtag> hashtags = new ArrayList<>();
 
     public Room(){}
     public Room(RoomRequestDto requestDto, User user) {

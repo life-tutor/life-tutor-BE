@@ -21,7 +21,7 @@ public class RoomHashtag {
     public RoomHashtag(Hashtag hashtag, Room room){
         this.hashtag = hashtag;
         this.room = room;
-//        if(!room.getHashtags().contains(this)) room.getHashtags().add(this);
+        if(!room.getHashtags().contains(this)) room.getHashtags().add(this);
     }
 
     public Long getId() {

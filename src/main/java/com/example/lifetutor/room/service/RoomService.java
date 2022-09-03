@@ -20,8 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +43,7 @@ public class RoomService {
     }
 
     // 채팅방 조회
+    @Transactional(readOnly = true)
     public RoomResponseDto getRooms(int page, int size){
         Pageable pageable = PageRequest.of(page,size);
         Page<Room> rooms = roomRepository.findAllByOrderByIdDesc(pageable);
@@ -50,18 +51,28 @@ public class RoomService {
     }
 
     // 해쉬태그 리스트
-//    public List<HashtagDto> searchHashtags(String keyword){
-//        notSearch(keyword);
-//        List<HashtagDto> result = new ArrayList<>();
-//        List<RoomHashtag> hashtags = roomHashtagRepository.findHashtags();
-//        if(!keyword.isEmpty() && !hashtags.isEmpty()){
-//            result = countHashtag(keyword, hashtags);
-//        }
-//        return result;
-//    }
+    @Transactional(readOnly = true)
+    public List<HashtagDto> searchHashtags(String keyword,int page,int size){
+        notSearch(keyword);
+        Pageable pageable = PageRequest.of(page,size);
+        List<HashtagDto> result = new ArrayList<>();
+        Page<RoomHashtag> hashtags = roomHashtagRepository.findByHashtags(pageable);
+        if(!keyword.isEmpty() && !hashtags.isEmpty()) result = countHashtag(keyword, hashtags.getContent());
+        return result;
+    }
 
-    // 채팅방 검색
+    // 채팅방 검색(기존)
+    @Transactional(readOnly = true)
     public RoomResponseDto searchRooms(String hashtag,int page,int size){
+        notSearch(hashtag);
+        Pageable pageable = PageRequest.of(page,size);
+        Page<Room> rooms = roomRepository.roomLikeHashtag(pageable, hashtag);
+        return roomResponse(rooms);
+    }
+
+    // 채팅방 검색(최신)
+    @Transactional(readOnly = true)
+    public RoomResponseDto searchRoomsFinal(String hashtag,int page,int size){
         notSearch(hashtag);
         Pageable pageable = PageRequest.of(page,size);
         Page<Room> rooms = roomRepository.roomByHashtag(pageable, hashtag);
@@ -75,13 +86,16 @@ public class RoomService {
         roomRepository.save(room);
         if(!requestDto.getHashtag().isEmpty()){
             Set<String> tags = new LinkedHashSet<>();
+            List<RoomHashtag> roomHashtags = new ArrayList<>();
             for(String hashtag : requestDto.getHashtag()){
                 hashtag = hashtag.trim();
                 if(!hashtag.isEmpty()) tags.add(hashtag);
             }
             for(String tag : tags){
-                saveHashtag(tag,room);
+                RoomHashtag roomHashtag = saveHashtag(tag,room);
+                roomHashtags.add(roomHashtag);
             }
+            roomHashtagRepository.saveAll(roomHashtags);
         }
         return new ResponseEntity<>(room.getId().toString(), HttpStatus.CREATED);
     }
@@ -101,9 +115,12 @@ public class RoomService {
             }
         }
         if(!requestDto.getHashtag().isEmpty()){
+            List<RoomHashtag> roomHashtags = new ArrayList<>();
             for(String tagStr : requestDto.getHashtag()){
-                saveHashtag(tagStr,room);
+                RoomHashtag roomHashtag = saveHashtag(tagStr,room);
+                roomHashtags.add(roomHashtag);
             }
+            roomHashtagRepository.saveAll(roomHashtags);
         }
     }
 
@@ -142,7 +159,8 @@ public class RoomService {
         List<ContentResponseDto> content = new ArrayList<>();
         for(Room room : rooms){
             List<String> tags = new ArrayList<>();
-            for(RoomHashtag roomHashtag : room.getHashtags()){
+            List<RoomHashtag> roomHashtags = roomHashtagRepository.findByRoom(room);
+            for(RoomHashtag roomHashtag : roomHashtags){
                 tags.add(roomHashtag.getHashtag().getHashtag());
             }
             ContentResponseDto responseDto = new ContentResponseDto(room,tags);
@@ -153,17 +171,17 @@ public class RoomService {
     }
 
     // 해쉬태그 저장
-    public void saveHashtag(String tagStr, Room room){
+    public RoomHashtag saveHashtag(String tagStr, Room room){
         validateHashtag(tagStr);
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
         if(tag == null) tag = new Hashtag(tagStr);
-        RoomHashtag roomHashtag = new RoomHashtag(tag,room);
-        roomHashtagRepository.save(roomHashtag);
+        return new RoomHashtag(tag,room);
+//        roomHashtagRepository.save(roomHashtag);
     }
 
     // 해쉬태그 중복 count
     public List<HashtagDto> countHashtag(String keyword, List<RoomHashtag> hashtags){
-        Map<String,Integer> map = new HashMap<>();
+        Map<String,Integer> map = new LinkedHashMap<>();
         for(RoomHashtag roomHashtag : hashtags){
             String hashtag = roomHashtag.getHashtag().getHashtag();
             if(hashtag.contains(keyword)) map.put(hashtag, map.getOrDefault(hashtag, 0) + 1);
