@@ -1,5 +1,7 @@
 package com.example.lifetutor.user.service;
 
+import com.example.lifetutor.comment.model.Comment;
+import com.example.lifetutor.comment.repository.CommentRepository;
 import com.example.lifetutor.config.security.UserDetailsServiceImpl;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
@@ -41,8 +43,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
-    private final UserDetailsServiceImpl userDetailsService;
-
+    private final CommentRepository commentRepository;
     //회원가입
     public ResponseEntity<?> registerUser(SignupRequestDto signupRequestDto) {
         String username = signupRequestDto.getUsername();
@@ -124,9 +125,8 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<?> updateMyInfo(UpdateMyInfoRequestDto requestDto, User user) {
-
-        if(userRepository.existsByNickname(requestDto.getNickname()))
-            return new ResponseEntity<>("중복된 닉네임 입니다.", HttpStatus.valueOf(400));
+        if(requestDto.getNickname() == null && requestDto.getNickname().equals(""))
+            return new ResponseEntity<>("닉네임을 입력해주세요.", HttpStatus.valueOf(400));
 
         user.updateMyInfo(requestDto);
 
@@ -137,6 +137,12 @@ public class UserService {
 
     @Transactional
     public ResponseEntity<?> updateMyPassword(UpdateMyPasswordRequestDto requestDto, User user) {
+        if(user.getPassword() == null && user.getPassword().equals(""))
+            return new ResponseEntity<>("비밀번호를 입력해주세요.", HttpStatus.valueOf(400));
+
+        if(requestDto.getPassword() == null && requestDto.getPassword().equals("") && requestDto.getConfirmChangePassword() == null && requestDto.getConfirmChangePassword().equals(""))
+            return new ResponseEntity<>("비밀번호를 입력해주세요.", HttpStatus.valueOf(400));
+
         if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
             return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
 
@@ -152,16 +158,5 @@ public class UserService {
 
         return new ResponseEntity<>("변경이 완료 되었습니다.", HttpStatus.valueOf(200));
     }
-
-    public ResponseEntity<?> leaveUser(LeaveUserRequestDto requestDto, User user) {
-        if(!requestDto.getPassword().equals(requestDto.getCheckPassword()))
-            return new ResponseEntity<>("변경하는 비밀번호가 일치하지 않습니다.", HttpStatus.valueOf(400));
-
-        if(!passwordEncoder.matches(requestDto.getPassword(),user.getPassword()))
-            return new ResponseEntity<>("비밀번호를 확인해주세요.", HttpStatus.valueOf(400));
-        
-        userRepository.delete(user);
-
-        return new ResponseEntity<>("탈퇴가 완료 되었습니다.", HttpStatus.valueOf(200));
-    }
+    
 }

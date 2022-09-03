@@ -29,7 +29,6 @@ public class UserController {
         return userService.registerUser(signupRequestDto);
     }
 
-
     //내 정보 보기
     @GetMapping("user/info")
     public ResponseEntity<?> showMyInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -69,10 +68,4 @@ public class UserController {
         return userService.updateMyPassword(requestDto,user);
     }
 
-    //회원 탈퇴
-    @DeleteMapping("mypage/user")
-    public ResponseEntity<?> leaveUser(@RequestBody LeaveUserRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userDetails.getUser();
-        return userService.leaveUser(requestDto,user);
-    }
 }
