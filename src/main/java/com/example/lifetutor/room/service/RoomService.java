@@ -169,7 +169,7 @@ public class RoomService {
         validateHashtag(tagStr);
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
         if(tag == null) tag = new Hashtag(tagStr);
-        RoomHashtag roomHashtag =  new RoomHashtag(tag,room);
+        RoomHashtag roomHashtag = new RoomHashtag(tag,room);
         roomHashtagRepository.save(roomHashtag);
     }
 
