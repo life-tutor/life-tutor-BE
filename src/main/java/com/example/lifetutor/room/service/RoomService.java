@@ -144,7 +144,7 @@ public class RoomService {
             String host = room.getUser().getUsername();
             if(host.equals(user.getUsername())) deleteRoom(room_id,user);
             else{
-                Enter exitUser = enterRepository.findByUser(user);
+                Enter exitUser = enterRepository.findByRoomAndUser(room,user);
                 enterRepository.delete(exitUser);
             }
         }
@@ -215,6 +215,7 @@ public class RoomService {
         if(title.isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
     }
     public void notSearch(String hashtag){
+        hashtag.trim();
         if(hashtag.isEmpty()) throw new IllegalArgumentException("검색어를 입력해주세요.");
         else validateHashtag(hashtag);
     }
