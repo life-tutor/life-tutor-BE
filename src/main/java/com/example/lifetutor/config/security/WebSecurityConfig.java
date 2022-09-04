@@ -220,6 +220,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // websocket 허용
         skipPathList.add("GET,/iting/**");
 
+        // ec2 Target group Health check 허용
+        skipPathList.add("GET,/health-check");
+
         FilterSkipMatcher matcher = new FilterSkipMatcher(
                 skipPathList,
                 "/**"
