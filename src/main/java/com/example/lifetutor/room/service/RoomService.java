@@ -111,7 +111,7 @@ public class RoomService {
         // 해쉬태그는 추가할 수도 있으므로 삭제 후 다시 작성
         List<RoomHashtag> roomHashtags = roomHashtagRepository.findByRoom(room);
         if(!roomHashtags.isEmpty()){
-            deleteHashtag();
+//            deleteHashtag();
             for(RoomHashtag roomHashtag : roomHashtags){
                 roomHashtag.getHashtag().getRoomHashtags().remove(roomHashtag);
             }
@@ -154,7 +154,7 @@ public class RoomService {
     // 채팅방 삭제
     public void deleteRoom(Long room_id, User user){
         roomRepository.findById(room_id).ifPresent(room -> room.validateUser(user));
-        deleteHashtag();
+//        deleteHashtag();
         roomRepository.deleteById(room_id);
     }
 
