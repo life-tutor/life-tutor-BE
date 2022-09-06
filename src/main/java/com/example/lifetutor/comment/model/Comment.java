@@ -54,7 +54,6 @@ public class Comment extends Timestamped {
     public List<CommentLikes> getLikes() {
         return likes;
     }
-
     // 수정 메소드
     public void update(CommentRequestDto requestDto){
         this.content = requestDto.getContent();
