@@ -1,9 +1,7 @@
 package com.example.lifetutor.massage.dto.response;
 
 import com.example.lifetutor.massage.dto.request.MessageRequestDto;
-import lombok.Getter;
 
-@Getter
 public class MessageResponseDto {
     private final MessageRequestDto.Enter enter;
     private final String nickname;
@@ -17,5 +15,25 @@ public class MessageResponseDto {
         this.time = time;
         this.messageType = requestDto.getMessageType();
         this.message = requestDto.getMessage();
+    }
+
+    public MessageRequestDto.Enter getEnter() {
+        return enter;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public MessageRequestDto.MessageType getMessageType() {
+        return messageType;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }
