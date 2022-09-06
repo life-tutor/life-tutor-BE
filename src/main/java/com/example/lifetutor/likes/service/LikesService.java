@@ -8,6 +8,7 @@ import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
 @Service
@@ -34,7 +35,7 @@ public class LikesService {
     // 공감 삭제
     public void unLikes(Long postingId, User user){
         Post post = postNotFound(postingId);
-        if(!isLikes(post,user)) throw new IllegalArgumentException("공감한적 없습니다.");
+        if(!isLikes(post,user)) throw new EntityNotFoundException("공감한적 없습니다.");
         Likes likes = foundLikes(post,user);
         likesRepository.deleteById(likes.getId());
     }
@@ -42,7 +43,7 @@ public class LikesService {
     //logic check
     public Post postNotFound(Long postingId){
         return postRepository.findById(postingId).orElseThrow(
-                () -> new IllegalArgumentException("게시글을 찾을 수 없습니다.")
+                () -> new EntityNotFoundException("게시글을 찾을 수 없습니다.")
         );
     }
     public Likes foundLikes(Post post, User user){

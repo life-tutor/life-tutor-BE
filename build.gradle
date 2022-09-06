@@ -43,6 +43,9 @@ dependencies {
 
     // oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // sentry
+    implementation 'io.sentry:sentry-spring-boot-starter:6.4.1'
 }
 
 tasks.named('test') {
