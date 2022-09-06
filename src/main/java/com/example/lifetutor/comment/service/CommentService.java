@@ -9,6 +9,7 @@ import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 
 @Service
@@ -50,12 +51,12 @@ public class CommentService {
     //logic check
     public Post postNotFound(Long postingId){
         return postRepository.findById(postingId).orElseThrow(
-                () -> new IllegalArgumentException("게시글을 찾을 수 없습니다.")
+                () -> new EntityNotFoundException("게시글을 찾을 수 없습니다.")
         );
     }
     public Comment commentNotFound(Long commentId){
         return commentRepository.findById(commentId).orElseThrow(
-                () -> new IllegalArgumentException("댓글을 찾을 수 없습니다.")
+                () -> new EntityNotFoundException("댓글을 찾을 수 없습니다.")
         );
     }
 }

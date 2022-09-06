@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 @Service
 @Transactional
@@ -35,7 +36,7 @@ public class CommentLikesService {
     // 공감 삭제
     public void unLikes(Long commentId, User user){
         Comment comment = commentNotFound(commentId);
-        if(!isLikes(comment,user)) throw new IllegalArgumentException("공감한적 없습니다.");
+        if(!isLikes(comment,user)) throw new EntityNotFoundException("공감한적 없습니다.");
         CommentLikes likes = foundLikes(comment,user);
         likesRepository.deleteById(likes.getId());
     }
@@ -43,7 +44,7 @@ public class CommentLikesService {
     //logic check
     public Comment commentNotFound(Long commentId){
         return commentRepository.findById(commentId).orElseThrow(
-                () -> new IllegalArgumentException("댓글을 찾을 수 없습니다.")
+                () -> new EntityNotFoundException("댓글을 찾을 수 없습니다.")
         );
     }
     public CommentLikes foundLikes(Comment comment, User user){

@@ -79,7 +79,7 @@ public class RoomIntegrationTest {
                                 String.class
                         );
                 //then
-                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+                assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
                 assertEquals("방을 찾을 수 없습니다.",response.getBody());
             }
         }
