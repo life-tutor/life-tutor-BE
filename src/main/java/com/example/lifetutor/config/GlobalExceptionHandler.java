@@ -33,9 +33,8 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
     }
     @ExceptionHandler(MissingPathVariableException.class)
-    public ResponseEntity<String> handleMissingPathVariable(MissingPathVariableException e){
+    public void handleMissingPathVariable(MissingPathVariableException e){
         Sentry.captureException(e);
-        return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
     }
     @ExceptionHandler(TransactionSystemException.class)
     public ResponseEntity<String> handlerException(TransactionSystemException e){
@@ -44,8 +43,7 @@ public class GlobalExceptionHandler {
     }
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleExceptions(Exception e){
+    public void handleExceptions(Exception e){
         Sentry.captureException(e);
-        return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
