@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PostService {
@@ -42,17 +43,35 @@ public class PostService {
         this.postHashtagRepository = postHashtagRepository;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PostResponseDto getPosts(int page, int size, UserDetailsImpl userDetails) {
-        Sort.Direction direction = Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, "id");
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Post> posts = postRepository.findAll(pageable);
 
+        Page<Post> posts = postRepository.findAll(pageable);
         List<Post> contents = posts.getContent();
 
         List<ContentDto> content = getContents(userDetails, contents);
+
+        return new PostResponseDto(content, posts.isLast());
+    }
+
+    @Transactional(readOnly = true)
+    public PostResponseDto getPostsOfNotUser(int page, int size) {
+
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Post> posts = postRepository.findAll(pageable);
+        List<Post> contents = posts.getContent();
+
+        List<ContentDto> content = new ArrayList<>();
+        for (Post post : contents)
+            content.add(getCustomMadePost(post));
+
         return new PostResponseDto(content, posts.isLast());
     }
 
@@ -64,19 +83,18 @@ public class PostService {
         // post 저장
         postRepository.save(post);
         // hashtag 저장
-        saveHashtag(post, postRequestDto.getHashtag());
+        if (!postRequestDto.getHashtag().isEmpty() || postRequestDto.getHashtag() != null)
+            saveHashtag(post, postRequestDto.getHashtag());
     }
 
     @Transactional
     public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
 
-        Sort.Direction direction = Sort.Direction.DESC;
-        Sort sort = Sort.by(direction, "id");
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
 
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        String[] tags = hashtag.split(",");
-        Long[] idArr = getDistinctIds(tags);
+        Long[] idArr = getDistinctIds(hashtag);
 
         Page<Post> posts = postRepository.findAll(pageable, idArr);
 
@@ -111,18 +129,22 @@ public class PostService {
 
     @Transactional
     public void deletePost(Long postingId) {
+        postHashtagRepository.deleteByPostId(postingId);
         postRepository.deleteById(postingId);
     }
 
-    private Long[] getDistinctIds(String[] tags) {
+    private Long[] getDistinctIds(String hashtag) {
         HashSet<Long> postIds = new HashSet<>();
-        for (String t : tags) {
-            Hashtag tag = hashtagRepository.findByHashtag(t);
-            List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
-            for (PostHashtag postHashtag : postHashtags) {
-                postIds.add(postHashtag.getPost().getId());
-            }
+        Hashtag tag = hashtagRepository.findByHashtag(hashtag);
+
+        if (tag == null) return new Long[0];
+
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByHashtagId(tag.getId());
+
+        for (PostHashtag postHashtag : postHashtags) {
+            postIds.add(postHashtag.getPost().getId());
         }
+
         int i = 0;
         Long[] idArr = new Long[postIds.size()];
         for (Long id : postIds) {
@@ -137,6 +159,52 @@ public class PostService {
         for (Post post : contents)
             content.add(getCustomMadePost(userDetails, post));
         return content;
+    }
+
+    private ContentDto getCustomMadePost(Post post) {
+
+        // 게시글의 해시태그 가져오기
+        List<PostHashtag> postHashtags = postHashtagRepository.findAllByPostId(post.getId());
+        List<String> hashtags = new ArrayList<>();
+
+        for (PostHashtag h : postHashtags) {
+            Hashtag ht = hashtagRepository.findById(h.getHashtag().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("No search date"));
+            hashtags.add(ht.getHashtag());
+        }
+
+        List<Likes> likes = post.getLikes();
+        int like_count = likes.size();
+
+        // 게시글의 댓글 가져오기
+        List<Comment> comments = post.getComments();
+        List<CommentDto> commentDtos = new ArrayList<>();
+        for (Comment comment : comments) {
+            CommentDto commentDto = CommentDto.builder()
+                    .id(comment.getId())
+                    .nickname(comment.getUser().getNickname())
+                    .content(comment.getContent())
+                    .date(comment.getDate())
+                    .like_count(comment.getLikes().size())
+                    .isLike(false)
+                    .user_type(comment.getUser().getUser_type())
+                    .build();
+            commentDtos.add(commentDto);
+        }
+
+        return ContentDto.builder()
+                .posting_id(post.getId())
+                .nickname(post.getUser().getNickname())
+                .title(post.getTitle())
+                .date(post.getDate())
+                .posting_content(post.getPosting_content())
+                .hashtag(hashtags)
+                .like_count(like_count)
+                .isLike(false)
+                .comments(commentDtos)
+                .comment_count(post.getComments().size())
+                .user_type(post.getUser().getUser_type())
+                .build();
     }
 
     private ContentDto getCustomMadePost(UserDetailsImpl userDetails, Post post) {
@@ -194,7 +262,14 @@ public class PostService {
     }
 
     private void saveHashtag(Post post, List<String> hashtag) {
+
+        Set<String> tags = new HashSet<>();
         for (String s : hashtag) {
+            s = s.trim();
+            if (!s.equals("")) tags.add(s);
+        }
+
+        for (String s : tags) {
             Hashtag ht = hashtagRepository.findByHashtag(s);
             if (ht == null) {
                 Hashtag enrollmentHt = new Hashtag(s);
@@ -207,4 +282,6 @@ public class PostService {
             }
         }
     }
+
+
 }

@@ -137,7 +137,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/post/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/post").permitAll()
                 .antMatchers(HttpMethod.GET,"/api/**").permitAll()
-                .antMatchers(HttpMethod.POST ,"/api/signup").permitAll()
+                .antMatchers(HttpMethod.POST,"/api/signup").permitAll()
                 .antMatchers(HttpMethod.POST,"/api/login").permitAll()
                 .antMatchers(HttpMethod.GET,"/api/users/**").permitAll()
                 .antMatchers(HttpMethod.GET,"/").permitAll()
@@ -214,7 +214,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("GET,/login");
         skipPathList.add("GET,/join");
         skipPathList.add("GET,/post/**");
-//        skipPathList.add("GET,/api/main/**");
+        skipPathList.add("GET,/api/main/postings");
         skipPathList.add("GET,/post");
         skipPathList.add("GET,/api/oauth2/redirect/**");
         // websocket 허용
@@ -245,7 +245,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.addAllowedOrigin("http://localhost:3000");
-        configuration.addAllowedOrigin("http://togetherheyyo.s3-website.ap-northeast-2.amazonaws.com/");
+        configuration.addAllowedOrigin("https://it-ing.co.kr");
         configuration.addAllowedHeader("*");
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);

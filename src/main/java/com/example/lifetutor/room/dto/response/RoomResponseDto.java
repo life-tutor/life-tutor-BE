@@ -3,8 +3,8 @@ package com.example.lifetutor.room.dto.response;
 import java.util.List;
 
 public class RoomResponseDto {
-    private boolean isLast;
-    private List<ContentResponseDto> content;
+    private final boolean isLast;
+    private final List<ContentResponseDto> content;
 
     public RoomResponseDto(boolean isLast, List<ContentResponseDto> content) {
         this.isLast = isLast;

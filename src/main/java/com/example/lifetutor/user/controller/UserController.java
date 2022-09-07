@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/")
 @RequiredArgsConstructor
@@ -23,10 +25,9 @@ public class UserController {
 
     // 회원 가입
     @PostMapping("signup")
-    public ResponseEntity<?> registerUser(@RequestBody SignupRequestDto signupRequestDto) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid SignupRequestDto signupRequestDto) {
         return userService.registerUser(signupRequestDto);
     }
-
 
     //내 정보 보기
     @GetMapping("user/info")
@@ -67,10 +68,4 @@ public class UserController {
         return userService.updateMyPassword(requestDto,user);
     }
 
-    //회원 탈퇴
-    @DeleteMapping("mypage/user")
-    public ResponseEntity<?> leaveUser(@RequestBody LeaveUserRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        User user = userDetails.getUser();
-        return userService.leaveUser(requestDto,user);
-    }
 }
