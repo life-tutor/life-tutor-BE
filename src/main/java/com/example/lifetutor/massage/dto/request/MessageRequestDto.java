@@ -1,8 +1,5 @@
 package com.example.lifetutor.massage.dto.request;
 
-import lombok.Getter;
-
-@Getter
 public class MessageRequestDto {
     public enum MessageType{
         TEXT, IMG
@@ -14,6 +11,22 @@ public class MessageRequestDto {
     private MessageType messageType;
     private String nickname;
     private String message;
+
+    public Enter getEnter() {
+        return enter;
+    }
+
+    public MessageType getMessageType() {
+        return messageType;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public String getMessage() {
+        return message;
+    }
 
     public void setMessage(String message) {
         this.message = message;

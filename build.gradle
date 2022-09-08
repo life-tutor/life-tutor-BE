@@ -24,6 +24,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // jackson
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.3'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.3'
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'mysql:mysql-connector-java'
@@ -43,6 +48,9 @@ dependencies {
 
     // oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // sentry
+    implementation 'io.sentry:sentry-spring-boot-starter:6.4.1'
 }
 
 tasks.named('test') {
