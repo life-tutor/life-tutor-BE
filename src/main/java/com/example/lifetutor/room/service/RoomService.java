@@ -133,10 +133,12 @@ public class RoomService {
     // 채팅방 입장
     public void enterRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
-        if(room.getEnters().size() < 2){
-            Enter enter = new Enter(user,room);
-            enterRepository.save(enter);
-        }else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
+        if(existUser(room,user) == null){
+            if(room.getEnters().size() < 2){
+                Enter enter = new Enter(user,room);
+                enterRepository.save(enter);
+            }else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
+        }
     }
 
     // 채팅방 퇴장
@@ -146,10 +148,7 @@ public class RoomService {
         if(room != null){
             String host = room.getUser().getUsername();
             if(host.equals(user.getUsername())) deleteRoom(room_id,user);
-            else{
-                Enter exitUser = enterRepository.findByRoomAndUser(room,user);
-                enterRepository.delete(exitUser);
-            }
+            else enterRepository.delete(existUser(room, user));
         }
     }
 
@@ -231,5 +230,8 @@ public class RoomService {
     }
     public void validateHashtag(String hashtag){
         if(hashtag.length() < 2 || hashtag.length() > 6) throw new IllegalArgumentException("2자 ~ 6자까지 입력해주세요.");
+    }
+    public Enter existUser(Room room, User user){
+        return enterRepository.findByRoomAndUser(room,user);
     }
 }
