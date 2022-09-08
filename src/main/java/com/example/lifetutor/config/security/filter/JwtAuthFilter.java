@@ -41,15 +41,15 @@ public class JwtAuthFilter extends AbstractAuthenticationProcessingFilter {
             HttpServletResponse response
     ) throws AuthenticationException, IOException {
 
-        ObjectMapper objectMapper = new ObjectMapper();
+//        ObjectMapper objectMapper = new ObjectMapper();
 
         // JWT 값을 담아주는 변수 TokenPayload
         String tokenPayload = request.getHeader("Authorization");
         if (tokenPayload == null) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.setCharacterEncoding("UTF-8");
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            objectMapper.writeValue(response.getWriter(),"로그인 후 이용해주세요");
+//            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+//            response.setCharacterEncoding("UTF-8");
+//            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+//            objectMapper.writeValue(response.getWriter(),"로그인 후 이용해주세요");
 
             return null;
         }
