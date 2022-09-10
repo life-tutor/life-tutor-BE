@@ -14,7 +14,6 @@ import com.example.lifetutor.room.repository.RoomHashtagRepository;
 import com.example.lifetutor.room.repository.RoomRepository;
 import com.example.lifetutor.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -54,12 +53,11 @@ public class RoomService {
 
     // 해쉬태그 리스트
     @Transactional(readOnly = true)
-    public List<HashtagDto> searchHashtags(String keyword,int page,int size){
+    public List<HashtagDto> searchHashtags(String keyword){
         notSearch(keyword);
-        Pageable pageable = PageRequest.of(page,size);
         List<HashtagDto> result = new ArrayList<>();
-        Page<RoomHashtag> hashtags = roomHashtagRepository.findByHashtags(pageable);
-        if(!keyword.isEmpty() && !hashtags.isEmpty()) result = countHashtag(keyword, hashtags.getContent());
+        List<RoomHashtag> hashtags = roomHashtagRepository.findByHashtags();
+        if(!keyword.isEmpty() && !hashtags.isEmpty()) result = countHashtag(keyword, hashtags);
         return result;
     }
 
@@ -82,9 +80,9 @@ public class RoomService {
     }
 
     // 채팅방 생성
-    public ResponseEntity<String> createRoom(RoomRequestDto requestDto, User user){
-        isEmpty(requestDto);
-        Room room = new Room(requestDto,user);
+    public ResponseEntity<Long> createRoom(RoomRequestDto requestDto, User user){
+        isEmpty(requestDto.getTitle());
+        Room room = new Room(requestDto.getTitle(),user);
         roomRepository.save(room);
         if(!requestDto.getHashtag().isEmpty()){
             Set<String> tags = new LinkedHashSet<>();
@@ -93,13 +91,10 @@ public class RoomService {
                 hashtag = hashtag.trim();
                 if(!hashtag.isEmpty()) tags.add(hashtag);
             }
-            for(String tag : tags){
-                RoomHashtag roomHashtag = saveHashtag(tag,room);
-                roomHashtags.add(roomHashtag);
-            }
+            for(String tag : tags) roomHashtags.add(saveHashtag(tag, room));
             roomHashtagRepository.saveAll(roomHashtags);
         }
-        return new ResponseEntity<>(room.getId().toString(), HttpStatus.CREATED);
+        return new ResponseEntity<>(room.getId(), HttpStatus.CREATED);
     }
 
     // 채팅방 수정
@@ -107,25 +102,19 @@ public class RoomService {
         Room room = foundRoom(room_id);
         // 작성자 확인
         room.validateUser(user);
-        isEmpty(requestDto);
+        isEmpty(requestDto.getTitle());
         if(room.getEnters().size() < 2) room.update(requestDto);
         else throw new IllegalArgumentException("채팅방에 게스트가 입장한 후엔 수정이 불가능합니다.");
         // 해쉬태그는 추가할 수도 있으므로 삭제 후 다시 작성
         List<RoomHashtag> roomHashtags = roomHashtagRepository.findByRoom(room);
         if(!roomHashtags.isEmpty()){
-            for(RoomHashtag roomHashtag : roomHashtags){
-                roomHashtag.getHashtag().getRoomHashtags().remove(roomHashtag);
-            }
+            for(RoomHashtag roomHashtag : roomHashtags) roomHashtag.getHashtag().getRoomHashtags().remove(roomHashtag);
             roomHashtagRepository.deleteAll(roomHashtags);
             deleteHashtag();
         }
         roomHashtags.clear();
         if(!requestDto.getHashtag().isEmpty()){
-//            List<RoomHashtag> roomHashtags = new ArrayList<>();
-            for(String tagStr : requestDto.getHashtag()){
-                RoomHashtag roomHashtag = saveHashtag(tagStr,room);
-                roomHashtags.add(roomHashtag);
-            }
+            for(String tagStr : requestDto.getHashtag()) roomHashtags.add(saveHashtag(tagStr, room));
             roomHashtagRepository.saveAll(roomHashtags);
         }
     }
@@ -134,16 +123,13 @@ public class RoomService {
     public void enterRoom(Long room_id, User user){
         Room room = foundRoom(room_id);
         if(existUser(room,user) == null){
-            if(room.getEnters().size() < 2){
-                Enter enter = new Enter(user,room);
-                enterRepository.save(enter);
-            }else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
+            if(room.getEnters().size() < 2) enterRepository.save(new Enter(user, room));
+            else throw new IllegalArgumentException("인원이 다 차서 입장이 불가합니다.");
         }
     }
 
     // 채팅방 퇴장
     public void exitRoom(Long room_id, User user){
-//        Room room = foundRoom(room_id);
         Room room = roomRepository.findById(room_id).orElse(null);
         if(room != null){
             String host = room.getUser().getUsername();
@@ -166,11 +152,8 @@ public class RoomService {
         for(Room room : rooms){
             List<String> tags = new ArrayList<>();
             List<RoomHashtag> roomHashtags = roomHashtagRepository.findByRoom(room);
-            for(RoomHashtag roomHashtag : roomHashtags){
-                tags.add(roomHashtag.getHashtag().getHashtag());
-            }
-            ContentResponseDto responseDto = new ContentResponseDto(room,tags);
-            content.add(responseDto);
+            for(RoomHashtag roomHashtag : roomHashtags) tags.add(roomHashtag.getHashtag().getHashtag());
+            content.add(new ContentResponseDto(room,tags));
         }
 //        if(content.isEmpty()) throw new IllegalArgumentException("채팅방이 없습니다.");
         return new RoomResponseDto(isLast,content);
@@ -182,7 +165,6 @@ public class RoomService {
         Hashtag tag = hashtagRepository.findByHashtag(tagStr);
         if(tag == null) tag = new Hashtag(tagStr);
         return new RoomHashtag(tag,room);
-//        roomHashtagRepository.save(roomHashtag);
     }
 
     // 해쉬태그 삭제
@@ -205,10 +187,7 @@ public class RoomService {
     public List<HashtagDto> sortedHashtag(Map<String,Integer> map){
         List<HashtagDto> result = new ArrayList<>();
         List<Map.Entry<String,Integer>> entries = map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toList());
-        for(Map.Entry<String,Integer> entry : entries){
-            HashtagDto hashtagDto = new HashtagDto(entry.getKey(),entry.getValue());
-            result.add(hashtagDto);
-        }
+        for(Map.Entry<String,Integer> entry : entries) result.add(new HashtagDto(entry.getKey(), entry.getValue()));
         return result;
     }
 
@@ -218,8 +197,7 @@ public class RoomService {
                 () -> new EntityNotFoundException("방을 찾을 수 없습니다.")
         );
     }
-    public void isEmpty(RoomRequestDto requestDto){
-        String title = requestDto.getTitle();
+    public void isEmpty(String title){
         title = title.trim();
         if(title.isEmpty()) throw new IllegalArgumentException("제목을 입력해주세요.");
     }
