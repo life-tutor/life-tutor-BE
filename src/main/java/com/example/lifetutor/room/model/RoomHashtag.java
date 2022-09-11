@@ -32,8 +32,4 @@ public class RoomHashtag {
     public Hashtag getHashtag() {
         return hashtag;
     }
-
-    public void update(Hashtag hashtag){
-        this.hashtag = hashtag;
-    }
 }

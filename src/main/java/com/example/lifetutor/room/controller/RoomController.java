@@ -33,26 +33,26 @@ public class RoomController {
 
     // 해쉬태그 리스트
     @GetMapping("/hashtags/rooms")
-    public List<HashtagDto> searchHashtags(@RequestParam("hashtag") String keyword,@RequestParam("page") int page, @RequestParam("size") int size){
-        return roomService.searchHashtags(keyword,page,size);
+    public List<HashtagDto> searchHashtags(@RequestParam("hashtag") String keyword){
+        return roomService.searchHashtags(keyword);
     }
 
     // 채팅방 검색(기존)
-    @GetMapping("/search/rooms")
+    @GetMapping("/test/search/rooms")
     public RoomResponseDto searchRooms(@RequestParam("hashtag") String hashtag,@RequestParam("page") int page, @RequestParam("size") int size){
         page = page-1;
         return roomService.searchRooms(hashtag,page,size);
     }
 
     // 채팅방 검색(최신)
-    @GetMapping("/test/search/rooms")
+    @GetMapping("/search/rooms")
     public RoomResponseDto searchRoomsFinal(@RequestParam("hashtag") String hashtag,@RequestParam("page") int page, @RequestParam("size") int size){
         return roomService.searchRoomsFinal(hashtag,page,size);
     }
 
     // 채팅방 생성
     @PostMapping("/chat/room")
-    public ResponseEntity<String> createRoom(@RequestBody RoomRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl user){
+    public ResponseEntity<Long> createRoom(@RequestBody RoomRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl user){
         return roomService.createRoom(requestDto,user.getUser());
     }
 
