@@ -26,23 +26,20 @@ public class CommentLikesService {
 
     // 공감
     public void likes(Long commentId, User user){
-        Comment comment = commentNotFound(commentId);
-        //이미 공감한 상태인지 확인
+        Comment comment = foundComment(commentId);
         if(isLikes(comment,user)) throw new IllegalArgumentException("이미 공감하셨습니다.");
-        CommentLikes likes = new CommentLikes(user,comment);
-        likesRepository.save(likes);
+        else likesRepository.save(new CommentLikes(user,comment));
     }
 
     // 공감 삭제
     public void unLikes(Long commentId, User user){
-        Comment comment = commentNotFound(commentId);
+        Comment comment = foundComment(commentId);
         if(!isLikes(comment,user)) throw new EntityNotFoundException("공감한적 없습니다.");
-        CommentLikes likes = foundLikes(comment,user);
-        likesRepository.deleteById(likes.getId());
+        else likesRepository.delete(foundLikes(comment,user));
     }
 
     //logic check
-    public Comment commentNotFound(Long commentId){
+    public Comment foundComment(Long commentId){
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("댓글을 찾을 수 없습니다.")
         );

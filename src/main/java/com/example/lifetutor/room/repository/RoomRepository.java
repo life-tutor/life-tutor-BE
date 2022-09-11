@@ -12,6 +12,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     Page<Room> findAllByOrderByIdDesc(Pageable pageable);
     @Query("select distinct r from Room r inner join r.hashtags h where h.hashtag.hashtag like %:hashtag% order by r.id desc")
     Page<Room> roomLikeHashtag(Pageable pageable, @Param("hashtag") String hashtag);
-    @Query("select distinct r from Room r inner join r.hashtags h where h.hashtag=:hashtag order by r.id desc")
+    @Query("select distinct r from Room r inner join r.hashtags h where h.hashtag.hashtag=:hashtag order by r.id desc")
     Page<Room> roomByHashtag(Pageable pageable, @Param("hashtag") String hashtag);
 }

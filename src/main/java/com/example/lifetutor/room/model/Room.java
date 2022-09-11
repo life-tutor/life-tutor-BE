@@ -27,10 +27,6 @@ public class Room {
     private final List<RoomHashtag> hashtags = new ArrayList<>();
 
     public Room(){}
-    public Room(RoomRequestDto requestDto, User user) {
-        this.title = requestDto.getTitle();
-        this.user = user;
-    }
 
     public Room(String title, User user) {
         this.title = title;

@@ -11,8 +11,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface RoomHashtagRepository extends JpaRepository<RoomHashtag, Long> {
-    @Query(value = "select rh from RoomHashtag rh join fetch rh.hashtag h order by h.hashtag asc", countQuery = "select count(rh) from RoomHashtag rh")
-    Page<RoomHashtag> findByHashtags(Pageable pageable);
+    @Query("select rh from RoomHashtag rh join fetch rh.hashtag h order by h.hashtag asc")
+    List<RoomHashtag> findByHashtags();
 
     @Query("select rh from RoomHashtag rh join fetch rh.hashtag h where rh.room = :room order by rh.id asc")
     List<RoomHashtag> findByRoom(@Param("room")Room room);

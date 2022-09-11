@@ -5,8 +5,11 @@ import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.service.PostService;
+import com.example.lifetutor.room.dto.response.HashtagDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class PostController {
@@ -47,6 +50,16 @@ public class PostController {
             @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
         return postService.searchHashtag(hashtag, page, size, userDetails);
+    }
+
+    @GetMapping("/api/test/search/postings")
+    public PostResponseDto searchPostings(@RequestParam("hashtag") String hashtag, @RequestParam("page") int page, @RequestParam("size") int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return postService.searchPostings(hashtag, page, size, userDetails);
+    }
+
+    @GetMapping("/api/hashtags/posts")
+    public List<HashtagDto> searchHashtags(@RequestParam("hashtag") String keyword){
+        return postService.searchHashtags(keyword);
     }
 
     @GetMapping("/api/board/detail/{postingId}")
