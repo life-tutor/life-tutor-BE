@@ -1,11 +1,11 @@
 package com.example.lifetutor.post.controller;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
+import com.example.lifetutor.hashtag.dto.response.HashtagDto;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
 import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.service.PostService;
-import com.example.lifetutor.room.dto.response.HashtagDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,16 +43,6 @@ public class PostController {
     }
 
     @GetMapping("/api/search/postings")
-    public PostResponseDto searchHashtag(
-            @RequestParam("hashtag") String hashtag,
-            @RequestParam("page") int page,
-            @RequestParam("size") int size,
-            @AuthenticationPrincipal UserDetailsImpl userDetails
-    ) {
-        return postService.searchHashtag(hashtag, page, size, userDetails);
-    }
-
-    @GetMapping("/api/test/search/postings")
     public PostResponseDto searchPostings(@RequestParam("hashtag") String hashtag, @RequestParam("page") int page, @RequestParam("size") int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return postService.searchPostings(hashtag, page, size, userDetails);
     }

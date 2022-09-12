@@ -3,6 +3,8 @@ package com.example.lifetutor.post.service;
 import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.commentLikes.service.CommentLikesService;
 import com.example.lifetutor.config.security.UserDetailsImpl;
+import com.example.lifetutor.hashtag.dto.response.HashtagDto;
+import com.example.lifetutor.hashtag.model.CountHashtag;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
@@ -14,8 +16,6 @@ import com.example.lifetutor.post.dto.response.ContentDto;
 import com.example.lifetutor.post.dto.response.PostResponseDto;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
-import com.example.lifetutor.room.dto.response.HashtagDto;
-import com.example.lifetutor.room.model.RoomHashtag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +24,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class PostService {
@@ -34,13 +36,15 @@ public class PostService {
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
+    private final CountHashtag countHashtag;
 
     @Autowired
-    public PostService(CommentLikesService commentLikesService, PostRepository postRepository, HashtagRepository hashtagRepository, PostHashtagRepository postHashtagRepository) {
+    public PostService(CommentLikesService commentLikesService, PostRepository postRepository, HashtagRepository hashtagRepository, PostHashtagRepository postHashtagRepository, CountHashtag countHashtag) {
         this.commentLikesService = commentLikesService;
         this.postRepository = postRepository;
         this.hashtagRepository = hashtagRepository;
         this.postHashtagRepository = postHashtagRepository;
+        this.countHashtag = countHashtag;
     }
 
     @Transactional(readOnly = true)
@@ -87,23 +91,7 @@ public class PostService {
             saveHashtag(post, postRequestDto.getHashtag());
     }
 
-    @Transactional
-    public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
-
-        Sort sort = Sort.by(Sort.Direction.DESC, "id");
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Long[] idArr = getDistinctIds(hashtag);
-
-        Page<Post> posts = postRepository.findAll(pageable, idArr);
-
-        List<Post> contents = posts.getContent();
-        List<ContentDto> content = getContents(userDetails, contents);
-
-        return new PostResponseDto(content, posts.isLast());
-    }
-
+    @Transactional(readOnly = true)
     public PostResponseDto searchPostings(String hashtag, int page, int size, UserDetailsImpl userDetails) {
         validateHashtag(hashtag);
 
@@ -114,31 +102,15 @@ public class PostService {
 
         return new PostResponseDto(content, posts.isLast());
     }
+
+    @Transactional(readOnly = true)
     public List<HashtagDto> searchHashtags(String keyword) {
         validateHashtag(keyword);
 
         List<HashtagDto> result = new ArrayList<>();
         List<PostHashtag> hashtags = postHashtagRepository.findByHashtags();
         if(!keyword.isEmpty() && !hashtags.isEmpty())
-            result = countHashtag(keyword, hashtags);
-        return result;
-    }
-
-    private List<HashtagDto> countHashtag(String keyword, List<PostHashtag> hashtags) {
-        Map<String,Integer> map = new LinkedHashMap<>();
-        for(PostHashtag postHashtag : hashtags){
-            String hashtag = postHashtag.getHashtag().getHashtag();
-            if(hashtag.contains(keyword)) map.put(hashtag, map.getOrDefault(hashtag, 0) + 1);
-        }
-        return sortedHashtag(map);
-    }
-
-    private List<HashtagDto> sortedHashtag(Map<String, Integer> map) {
-        List<HashtagDto> result = new ArrayList<>();
-        List<Map.Entry<String,Integer>> entries =
-                map.entrySet().stream().sorted(Map.Entry.comparingByValue(Comparator.reverseOrder())).collect(Collectors.toList());
-        for(Map.Entry<String,Integer> entry : entries)
-            result.add(new HashtagDto(entry.getKey(), entry.getValue()));
+            result = countHashtag.postHashtag(keyword, hashtags);
         return result;
     }
 
@@ -151,7 +123,7 @@ public class PostService {
                 throw new IllegalArgumentException("2자 ~ 6자까지 입력해주세요.");
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public ContentDto getPost(Long postingId, UserDetailsImpl userDetails) {
         Post post = postRepository.findById(postingId).orElseThrow(
                 () -> new IllegalArgumentException("No search data."));
