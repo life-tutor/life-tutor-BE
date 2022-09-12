@@ -130,7 +130,7 @@ public class RoomService {
 
     // 채팅방 퇴장
     public void exitRoom(Long room_id, User user){
-        Room room = roomRepository.findById(room_id).orElse(null);
+        Room room = roomRepository.findId(room_id).orElse(null);
         if(room != null){
             String host = room.getUser().getUsername();
             if(host.equals(user.getUsername())) deleteRoom(room_id,user);
@@ -151,7 +151,7 @@ public class RoomService {
         List<ContentResponseDto> content = new ArrayList<>();
         for(Room room : rooms){
             List<String> tags = new ArrayList<>();
-            List<RoomHashtag> roomHashtags = roomHashtagRepository.findByRoom(room);
+            List<RoomHashtag> roomHashtags = room.getHashtags();
             for(RoomHashtag roomHashtag : roomHashtags) tags.add(roomHashtag.getHashtag().getHashtag());
             content.add(new ContentResponseDto(room,tags));
         }
