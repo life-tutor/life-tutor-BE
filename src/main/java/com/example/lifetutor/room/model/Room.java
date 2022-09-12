@@ -2,6 +2,8 @@ package com.example.lifetutor.room.model;
 
 import com.example.lifetutor.room.dto.request.RoomRequestDto;
 import com.example.lifetutor.user.model.User;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -20,17 +22,15 @@ public class Room {
     @Column(nullable = false)
     private String title;
 
+    @Fetch(FetchMode.SUBSELECT)
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private final List<Enter> enters = new ArrayList<>();
 
+    @Fetch(FetchMode.SUBSELECT)
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
     private final List<RoomHashtag> hashtags = new ArrayList<>();
 
     public Room(){}
-    public Room(RoomRequestDto requestDto, User user) {
-        this.title = requestDto.getTitle();
-        this.user = user;
-    }
 
     public Room(String title, User user) {
         this.title = title;

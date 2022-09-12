@@ -5,11 +5,13 @@ import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.likes.model.Likes;
 import com.example.lifetutor.post.dto.request.PostRequestDto;
+import com.example.lifetutor.room.model.RoomHashtag;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.utility.Timestamped;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -40,6 +42,9 @@ public class Post extends Timestamped {
 
     @OneToMany(mappedBy = "post")
     private List<PostHashtag> postHashtags;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private final List<PostHashtag> hashtags = new ArrayList<>();
 
     public Post(PostRequestDto requestDto) {
         this.user = requestDto.getUser();

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns="$LOCAL_SCHEMA$">
+    <defaultCache
+        maxElementsInMemory="10000"
+        eternal="false"
+        timeToIdleSeconds="1200"
+        timeToLiveSeconds="1200"
+        diskExpiryThreadIntervalSeconds="1200"
+        memoryStoreEvictionPolicy="LRU"/>
+    <cache
+        name="org.hibernate.cache.spi.UpdateTimestampsCache"
+        maxElementsInMemory="10000"
+        eternal="true"/>
+</ehcache>

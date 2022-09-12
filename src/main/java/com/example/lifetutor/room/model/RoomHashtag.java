@@ -1,15 +1,20 @@
 package com.example.lifetutor.room.model;
 
 import com.example.lifetutor.hashtag.model.Hashtag;
+import org.hibernate.annotations.Cache;
 
 import javax.persistence.*;
 
+import static org.hibernate.annotations.CacheConcurrencyStrategy.READ_ONLY;
+
 @Entity
+@Cache(usage = READ_ONLY)
+@Cacheable
 public class RoomHashtag {
     @Id @GeneratedValue
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY,optional = false,cascade = {CascadeType.PERSIST, CascadeType.DETACH})
+    @ManyToOne(fetch = FetchType.EAGER,optional = false,cascade = {CascadeType.PERSIST, CascadeType.DETACH})
     @JoinColumn(name="HASHTAG_ID",nullable = false)
     private Hashtag hashtag;
 
@@ -31,9 +36,5 @@ public class RoomHashtag {
 
     public Hashtag getHashtag() {
         return hashtag;
-    }
-
-    public void update(Hashtag hashtag){
-        this.hashtag = hashtag;
     }
 }

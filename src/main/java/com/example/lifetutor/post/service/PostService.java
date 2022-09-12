@@ -3,6 +3,8 @@ package com.example.lifetutor.post.service;
 import com.example.lifetutor.comment.model.Comment;
 import com.example.lifetutor.commentLikes.service.CommentLikesService;
 import com.example.lifetutor.config.security.UserDetailsImpl;
+import com.example.lifetutor.hashtag.dto.response.HashtagDto;
+import com.example.lifetutor.hashtag.model.CountHashtag;
 import com.example.lifetutor.hashtag.model.Hashtag;
 import com.example.lifetutor.hashtag.model.PostHashtag;
 import com.example.lifetutor.hashtag.repository.HashtagRepository;
@@ -34,13 +36,15 @@ public class PostService {
     private final PostRepository postRepository;
     private final HashtagRepository hashtagRepository;
     private final PostHashtagRepository postHashtagRepository;
+    private final CountHashtag countHashtag;
 
     @Autowired
-    public PostService(CommentLikesService commentLikesService, PostRepository postRepository, HashtagRepository hashtagRepository, PostHashtagRepository postHashtagRepository) {
+    public PostService(CommentLikesService commentLikesService, PostRepository postRepository, HashtagRepository hashtagRepository, PostHashtagRepository postHashtagRepository, CountHashtag countHashtag) {
         this.commentLikesService = commentLikesService;
         this.postRepository = postRepository;
         this.hashtagRepository = hashtagRepository;
         this.postHashtagRepository = postHashtagRepository;
+        this.countHashtag = countHashtag;
     }
 
     @Transactional(readOnly = true)
@@ -87,24 +91,39 @@ public class PostService {
             saveHashtag(post, postRequestDto.getHashtag());
     }
 
-    @Transactional
-    public PostResponseDto searchHashtag(String hashtag, int page, int size, UserDetailsImpl userDetails) {
+    @Transactional(readOnly = true)
+    public PostResponseDto searchPostings(String hashtag, int page, int size, UserDetailsImpl userDetails) {
+        validateHashtag(hashtag);
 
-        Sort sort = Sort.by(Sort.Direction.DESC, "id");
-
-        Pageable pageable = PageRequest.of(page, size, sort);
-
-        Long[] idArr = getDistinctIds(hashtag);
-
-        Page<Post> posts = postRepository.findAll(pageable, idArr);
-
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = postRepository.postByHashtag(pageable, hashtag);
         List<Post> contents = posts.getContent();
         List<ContentDto> content = getContents(userDetails, contents);
 
         return new PostResponseDto(content, posts.isLast());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
+    public List<HashtagDto> searchHashtags(String keyword) {
+        validateHashtag(keyword);
+
+        List<HashtagDto> result = new ArrayList<>();
+        List<PostHashtag> hashtags = postHashtagRepository.findByHashtags();
+        if(!keyword.isEmpty() && !hashtags.isEmpty())
+            result = countHashtag.postHashtag(keyword, hashtags);
+        return result;
+    }
+
+    private void validateHashtag(String hashtag) {
+        hashtag = hashtag.trim();
+        if(hashtag.isEmpty())
+            throw new IllegalArgumentException("검색어를 입력해주세요.");
+        else
+            if(hashtag.length() < 2 || hashtag.length() > 6)
+                throw new IllegalArgumentException("2자 ~ 6자까지 입력해주세요.");
+    }
+
+    @Transactional(readOnly = true)
     public ContentDto getPost(Long postingId, UserDetailsImpl userDetails) {
         Post post = postRepository.findById(postingId).orElseThrow(
                 () -> new IllegalArgumentException("No search data."));
@@ -282,6 +301,7 @@ public class PostService {
             }
         }
     }
+
 
 
 }
