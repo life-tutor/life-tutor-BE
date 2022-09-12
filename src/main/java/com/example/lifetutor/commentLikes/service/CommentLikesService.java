@@ -46,4 +46,7 @@ public class CommentLikesService {
     public CommentLikes foundLikes(Comment comment, User user){
         return likesRepository.findByCommentAndUser(comment,user);
     }
+    public boolean isLikes(Comment comment, User user){
+        return foundLikes(comment,user)!=null;
+    }
 }
