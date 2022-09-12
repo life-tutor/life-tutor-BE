@@ -26,15 +26,15 @@ public class LikesService {
     // 공감
     public void likes(Long postingId, User user){
         Post post = foundPost(postingId);
-        if(isLikes(post,user)) throw new IllegalArgumentException("이미 공감하셨습니다.");
+        if(foundLikes(post,user) != null) throw new IllegalArgumentException("이미 공감하셨습니다.");
         else likesRepository.save(new Likes(user, post));
     }
 
     // 공감 삭제
     public void unLikes(Long postingId, User user){
-        Post post = foundPost(postingId);
-        if(!isLikes(post,user)) throw new EntityNotFoundException("공감한적 없습니다.");
-        else likesRepository.delete(foundLikes(post,user));
+        Likes likes = foundLikes(foundPost(postingId),user);
+        if(likes == null) throw new EntityNotFoundException("공감한적 없습니다.");
+        else likesRepository.delete(likes);
     }
 
     //logic check
@@ -45,8 +45,5 @@ public class LikesService {
     }
     public Likes foundLikes(Post post, User user){
         return likesRepository.findByPostAndUser(post,user);
-    }
-    public boolean isLikes(Post post, User user){
-        return foundLikes(post,user)!=null;
     }
 }

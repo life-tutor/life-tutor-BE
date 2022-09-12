@@ -27,15 +27,13 @@ public class CommentService {
 
     // 댓글 작성
     public void create(Long postingId, CommentRequestDto requestDto, User user){
-        Post post = postNotFound(postingId);
-        Comment comment = new Comment(user,post,requestDto);
-        commentRepository.save(comment);
+        commentRepository.save(new Comment(user,foundPost(postingId),requestDto));
     }
 
     // 댓글 수정
     public void update(Long postingId, Long commentId, CommentRequestDto requestDto, User user){
-        postNotFound(postingId);
-        Comment comment = commentNotFound(commentId);
+        foundPost(postingId);
+        Comment comment = fountComment(commentId);
         // 작성자 확인
         comment.validateUser(user);
         comment.update(requestDto);
@@ -43,18 +41,18 @@ public class CommentService {
 
     // 댓글 삭제
     public void delete(Long postingId, Long commentId, User user){
-        postNotFound(postingId);
+        foundPost(postingId);
         commentRepository.findById(commentId).ifPresent(comment -> comment.validateUser(user));
         commentRepository.deleteById(commentId);
     }
 
     //logic check
-    public Post postNotFound(Long postingId){
+    public Post foundPost(Long postingId){
         return postRepository.findById(postingId).orElseThrow(
                 () -> new EntityNotFoundException("게시글을 찾을 수 없습니다.")
         );
     }
-    public Comment commentNotFound(Long commentId){
+    public Comment fountComment(Long commentId){
         return commentRepository.findById(commentId).orElseThrow(
                 () -> new EntityNotFoundException("댓글을 찾을 수 없습니다.")
         );

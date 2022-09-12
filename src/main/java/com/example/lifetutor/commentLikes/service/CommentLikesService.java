@@ -5,7 +5,6 @@ import com.example.lifetutor.comment.repository.CommentRepository;
 import com.example.lifetutor.commentLikes.model.CommentLikes;
 import com.example.lifetutor.commentLikes.repository.CommentLikesRepository;
 import com.example.lifetutor.user.model.User;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,15 +26,15 @@ public class CommentLikesService {
     // 공감
     public void likes(Long commentId, User user){
         Comment comment = foundComment(commentId);
-        if(isLikes(comment,user)) throw new IllegalArgumentException("이미 공감하셨습니다.");
+        if(foundLikes(comment,user) != null) throw new IllegalArgumentException("이미 공감하셨습니다.");
         else likesRepository.save(new CommentLikes(user,comment));
     }
 
     // 공감 삭제
     public void unLikes(Long commentId, User user){
-        Comment comment = foundComment(commentId);
-        if(!isLikes(comment,user)) throw new EntityNotFoundException("공감한적 없습니다.");
-        else likesRepository.delete(foundLikes(comment,user));
+        CommentLikes likes = foundLikes(foundComment(commentId),user);
+        if(likes == null) throw new EntityNotFoundException("공감한적 없습니다.");
+        else likesRepository.delete(likes);
     }
 
     //logic check
@@ -46,8 +45,5 @@ public class CommentLikesService {
     }
     public CommentLikes foundLikes(Comment comment, User user){
         return likesRepository.findByCommentAndUser(comment,user);
-    }
-    public boolean isLikes(Comment comment, User user){
-        return foundLikes(comment,user)!=null;
     }
 }
