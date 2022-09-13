@@ -27,7 +27,6 @@ public class RoomController {
     // 채팅방 조회
     @GetMapping("/main/rooms")
     public RoomResponseDto getRooms(@RequestParam("page") int page, @RequestParam("size") int size){
-        page = page-1;
         return roomService.getRooms(page, size);
     }
 
