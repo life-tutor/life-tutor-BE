@@ -1,18 +1,21 @@
 package com.example.lifetutor.room.controller;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
-import com.example.lifetutor.room.dto.request.RoomRequestDto;
 import com.example.lifetutor.hashtag.dto.response.HashtagDto;
+import com.example.lifetutor.room.dto.request.RoomRequestDto;
 import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api")
 public class RoomController {
@@ -27,6 +30,7 @@ public class RoomController {
     // 채팅방 조회
     @GetMapping("/main/rooms")
     public RoomResponseDto getRooms(@RequestParam("page") int page, @RequestParam("size") int size){
+        page = page-1;
         return roomService.getRooms(page, size);
     }
 
@@ -51,13 +55,13 @@ public class RoomController {
 
     // 채팅방 생성
     @PostMapping("/chat/room")
-    public ResponseEntity<Long> createRoom(@RequestBody RoomRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl user){
+    public ResponseEntity<Long> createRoom(@RequestBody @Valid RoomRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl user){
         return roomService.createRoom(requestDto,user.getUser());
     }
 
     // 채팅방 수정
     @PutMapping("/chat/room/{room_id}")
-    public ResponseEntity<String> updateRoom(@PathVariable Long room_id, @RequestBody RoomRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl user){
+    public ResponseEntity<String> updateRoom(@PathVariable Long room_id, @RequestBody @Valid RoomRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl user){
         roomService.updateRoom(room_id,requestDto,user.getUser());
         return new ResponseEntity<>("수정 성공",HttpStatus.OK);
     }
