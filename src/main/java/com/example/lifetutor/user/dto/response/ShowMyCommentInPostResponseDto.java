@@ -1,6 +1,5 @@
 package com.example.lifetutor.user.dto.response;
 
-import com.example.lifetutor.user.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,10 +7,9 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class ShowMyPostsResponseDto {
-    private List<ContentResponseDto> content;
-    private Role user_type;
+@AllArgsConstructor
+public class ShowMyCommentInPostResponseDto {
+    private List<MyCommentResponseDto> content;
     private boolean isLast;
 }
