@@ -2,7 +2,7 @@ package com.example.lifetutor.room.controller;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.room.dto.request.RoomRequestDto;
-import com.example.lifetutor.room.dto.response.HashtagDto;
+import com.example.lifetutor.hashtag.dto.response.HashtagDto;
 import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,6 @@ public class RoomController {
     // 채팅방 조회
     @GetMapping("/main/rooms")
     public RoomResponseDto getRooms(@RequestParam("page") int page, @RequestParam("size") int size){
-        page = page-1;
         return roomService.getRooms(page, size);
     }
 

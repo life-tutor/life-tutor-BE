@@ -3,14 +3,19 @@ package com.example.lifetutor.hashtag.model;
 import com.example.lifetutor.room.model.RoomHashtag;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cache;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.hibernate.annotations.CacheConcurrencyStrategy.READ_ONLY;
+
 @Entity
 @NoArgsConstructor
 @Getter
+@Cache(usage = READ_ONLY,include = "non-lazy")
+@Cacheable
 public class Hashtag {
 
     @Id

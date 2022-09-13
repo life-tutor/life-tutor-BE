@@ -1,4 +1,4 @@
-package com.example.lifetutor.room.dto.response;
+package com.example.lifetutor.hashtag.dto.response;
 
 import lombok.Getter;
 
