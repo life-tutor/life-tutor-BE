@@ -5,6 +5,7 @@ import com.example.lifetutor.user.dto.request.LeaveUserRequestDto;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyPasswordRequestDto;
+import com.example.lifetutor.user.dto.response.ShowMyCommentInPostResponseDto;
 import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.service.UserService;
@@ -45,7 +46,7 @@ public class UserController {
     }
     //내가 댓글 단 글 보기
     @GetMapping("mypage/comments/postings")
-    public ResponseEntity<ShowMyPostsResponseDto> showMyCommentInPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<ShowMyCommentInPostResponseDto> showMyCommentInPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return userService.showMyCommentInPost(page,size,user);
     }
