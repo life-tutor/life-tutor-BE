@@ -2,6 +2,7 @@ package com.example.lifetutor.integration;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.example.lifetutor.room.dto.response.RoomResponseDto;
 import com.example.lifetutor.room.model.Room;
 import com.example.lifetutor.room.repository.RoomRepository;
 import lombok.Builder;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -194,6 +196,24 @@ public class RoomIntegrationTest {
                 assertEquals(HttpStatus.OK, response.getStatusCode());
                 assertEquals("tester",response.getBody());
             }
+
+            @Test
+            @DisplayName("(비정상 종료 후) host 재입장")
+            void test3(){
+                //given
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
+                //when
+                ResponseEntity<String> response = testRestTemplate
+                        .postForEntity(
+                                "/api/chat/room/"+roomId+"/enter",
+                                requestEntity,
+                                String.class
+                        );
+                //then
+                assertEquals(HttpStatus.OK, response.getStatusCode());
+                assertEquals("nickname",response.getBody());
+            }
         }
     }
 
@@ -201,9 +221,51 @@ public class RoomIntegrationTest {
     @DisplayName("채팅방 검색")
     class Search{}
 
-    @Nested @Disabled
+    @Nested
     @DisplayName("채팅방 조회")
-    class List{}
+    class List{
+
+        @Nested
+        @DisplayName("실패")
+        class Fail{}
+
+        @Nested
+        @DisplayName("성공")
+        class Success{
+
+            @Test @Disabled
+            @DisplayName("조회 정상")
+            void test0(){
+                //given
+                int page = 0;
+                int size = 10;
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(headerToken);
+
+                //when
+                ResponseEntity<RoomResponseDto> response = testRestTemplate
+                        .exchange(
+                                "/api/main/rooms?page="+page+"&size="+size,
+                                HttpMethod.GET,
+                                requestEntity,
+                                RoomResponseDto.class
+                        );
+                //then
+                assertEquals(HttpStatus.OK,response.getStatusCode());
+                RoomResponseDto result = response.getBody();
+                assertNotNull(result);
+//                assertTrue(result.getIsLast());
+//                assertEquals(1,result.getContent().size());
+//                assertEquals(roomId,result.getContent().get(0).getRoomId());
+//                assertEquals("username",result.getContent().get(0).getUsername());
+//                assertEquals("nickname",result.getContent().get(0).getNickname());
+//                assertEquals("SEEKER",result.getContent().get(0).getUser_type());
+//                assertEquals("title",result.getContent().get(0).getTitle());
+//                assertEquals(false,result.getContent().get(0).isIsfull());
+//                assertEquals("해시태그해시",result.getContent().get(0).getHashtag().get(0));
+            }
+        }
+    }
 
     @Nested
     @DisplayName("채팅방 생성")
@@ -230,7 +292,8 @@ public class RoomIntegrationTest {
                                 String.class
                         );
                 //then
-                assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+                assertEquals("제목을 입력해주세요.", response.getBody());
             }
 
             @Test
@@ -253,18 +316,15 @@ public class RoomIntegrationTest {
                 assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
                 assertEquals("제목을 입력해주세요.",response.getBody());
             }
-        }
-
-        @Nested
-        @DisplayName("성공")
-        class Success{
 
             @Test
-            @DisplayName("작성 정상")
-            void test(){
+            @DisplayName("해시태그 1글자")
+            void test3(){
                 //given
+                ArrayList<String> hashtag = new ArrayList<>();
+                hashtag.add("해");
                 RoomRequest request = RoomRequest.builder()
-                        .title("title").hashtag(new ArrayList<>()).build();
+                        .title("title").hashtag(hashtag).build();
 
                 HttpHeaders headerToken = headerToken("username");
                 HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
@@ -276,8 +336,58 @@ public class RoomIntegrationTest {
                                 String.class
                         );
                 //then
+                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+                assertEquals("2자 ~ 6자까지 입력해주세요.",response.getBody());
+            }
+
+            @Test
+            @DisplayName("해시태그 7글자")
+            void test4(){
+                //given
+                ArrayList<String> hashtag = new ArrayList<>();
+                hashtag.add("해시태그해시태");
+                RoomRequest request = RoomRequest.builder()
+                        .title("title").hashtag(hashtag).build();
+
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
+                //when
+                ResponseEntity<String> response = testRestTemplate
+                        .postForEntity(
+                                "/api/chat/room",
+                                requestEntity,
+                                String.class
+                        );
+                //then
+                assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+                assertEquals("2자 ~ 6자까지 입력해주세요.",response.getBody());
+            }
+        }
+
+        @Nested
+        @DisplayName("성공")
+        class Success{
+
+            @Test
+            @DisplayName("작성 정상")
+            void test1(){
+                //given
+                ArrayList<String> hashtag = new ArrayList<>();
+                hashtag.add("해시태그해시");
+                RoomRequest request = RoomRequest.builder()
+                        .title("title").hashtag(hashtag).build();
+
+                HttpHeaders headerToken = headerToken("username");
+                HttpEntity<?> requestEntity = new HttpEntity<>(request, headerToken);
+                //when
+                ResponseEntity<Long> response = testRestTemplate
+                        .postForEntity(
+                                "/api/chat/room",
+                                requestEntity,
+                                Long.class
+                        );
+                //then
                 assertEquals(HttpStatus.CREATED, response.getStatusCode());
-                System.out.println("room_id: "+response.getBody());
             }
         }
     }
@@ -286,6 +396,6 @@ public class RoomIntegrationTest {
     @Getter
     public static class RoomRequest {
         private String title;
-        private java.util.List<String> hashtag;
+        private ArrayList<String> hashtag;
     }
 }
