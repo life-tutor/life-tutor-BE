@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.6.10'
     id 'io.spring.dependency-management' version '1.0.12.RELEASE'
     id 'java'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -50,12 +51,50 @@ dependencies {
 
     // sentry
     implementation 'io.sentry:sentry-spring-boot-starter:6.4.1'
+
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
+// plain jar를 생성하지 않는다.
 jar {
     enabled = false
 }
+
+// jacoco
+jacoco {
+    toolVersion = '0.8.8'
+}
+
+jacocoTestReport {
+    reports {
+        html.enabled true
+        csv.enabled true
+        xml.enabled false
+    }
+    dependsOn test
+}
+
+test {
+    finalizedBy jacocoTestReport // gradle test 이후에 jacocoTestReport를 실행
+}
+
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            enabled = true;
+            element = 'CLASS'
+
+            limit {
+                counter = 'METHOD'
+                value = 'COVEREDRATIO'
+                minimum = 0.5
+            }
+        }
+
+    }
+}
+
