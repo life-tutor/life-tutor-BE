@@ -16,6 +16,6 @@ public class OAuth2AuthenticationFailureHandler extends SimpleUrlAuthenticationF
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
-        getRedirectStrategy().sendRedirect(request, response, "https://it-ing.co.kr/oauth2/redirect/fail");
+        getRedirectStrategy().sendRedirect(request, response, "http://localhost:3000/oauth2/redirect/fail");
     }
 }

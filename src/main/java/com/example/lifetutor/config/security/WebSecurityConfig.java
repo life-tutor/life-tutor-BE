@@ -3,11 +3,13 @@ package com.example.lifetutor.config.security;
 import com.example.lifetutor.config.security.filter.FormLoginFilter;
 import com.example.lifetutor.config.security.filter.JwtAuthFilter;
 import com.example.lifetutor.config.security.jwt.HeaderTokenExtractor;
+import com.example.lifetutor.config.security.jwt.JwtDecoder;
 import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationFailureHandler;
 import com.example.lifetutor.config.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.example.lifetutor.config.security.oauth2.UserOAuth2Service;
 import com.example.lifetutor.config.security.provider.FormLoginAuthProvider;
 import com.example.lifetutor.config.security.provider.JWTAuthProvider;
+import com.example.lifetutor.user.repositroy.AuthRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +59,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserOAuth2Service userOAuth2Service;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final AuthRepository authRepository;
+    private final JwtDecoder jwtDecoder;
 
 
 
@@ -149,6 +153,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET, "/login/oauth2/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/oauth2/redirect/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/iting/**").permitAll()
+                .antMatchers(HttpMethod.PUT, "/api/refreshToken").permitAll()
 // 그 외 어떤 요청이든 '인증'
                 .anyRequest().authenticated()
                 .and()
@@ -180,7 +185,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Bean
     public FormLoginSuccessHandler formLoginSuccessHandler() {
-        return new FormLoginSuccessHandler();
+        return new FormLoginSuccessHandler(authRepository);
     }
 
     @Bean
@@ -203,6 +208,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         skipPathList.add("POST,/api/signup");
         skipPathList.add("POST,/api/login");
         skipPathList.add("GET,/api/users/**");
+        skipPathList.add("PUT,/api/refreshToken");
         //전체 게시글 조회
         skipPathList.add("GET,/api/posts");
         skipPathList.add("GET,/api/post/**");
@@ -227,12 +233,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
         JwtAuthFilter filter = new JwtAuthFilter(
                 matcher,
-                headerTokenExtractor
+                headerTokenExtractor,
+                jwtDecoder
         );
         filter.setAuthenticationManager(super.authenticationManagerBean());
 
         return filter;
     }
+
 
     @Bean
     @Override
@@ -250,6 +258,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         configuration.addAllowedMethod("*");
         configuration.setAllowCredentials(true);
         configuration.addExposedHeader("Authorization");
+        configuration.addExposedHeader("RefreshToken");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

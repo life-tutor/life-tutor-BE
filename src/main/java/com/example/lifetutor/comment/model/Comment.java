@@ -51,6 +51,10 @@ public class Comment extends Timestamped {
         return user;
     }
 
+    public Post getPost() {
+        return  post;
+    }
+
     public List<CommentLikes> getLikes() {
         return likes;
     }
