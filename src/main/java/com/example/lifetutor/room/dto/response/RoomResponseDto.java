@@ -8,9 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoomResponseDto {
-    private final boolean isLast;
-    private final List<ContentResponseDto> content;
+    private boolean isLast;
+    private List<ContentResponseDto> content;
 
+    public RoomResponseDto(){}
     public RoomResponseDto(Page<Room> rooms){
         this.isLast = rooms.isLast();
         this.content = new ArrayList<>();

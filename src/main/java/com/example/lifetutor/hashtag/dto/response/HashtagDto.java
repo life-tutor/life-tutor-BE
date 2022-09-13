@@ -4,9 +4,10 @@ import lombok.Getter;
 
 @Getter
 public class HashtagDto {
-    private final String hashtag;
-    private final int count;
+    private String hashtag;
+    private int count;
 
+    public HashtagDto(){}
     public HashtagDto(String hashtag, int count) {
         this.hashtag = hashtag;
         this.count = count;
