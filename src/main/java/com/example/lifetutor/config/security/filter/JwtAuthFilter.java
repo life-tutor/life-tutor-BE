@@ -1,8 +1,10 @@
 package com.example.lifetutor.config.security.filter;
 
 import com.example.lifetutor.config.security.jwt.HeaderTokenExtractor;
+import com.example.lifetutor.config.security.jwt.JwtDecoder;
 import com.example.lifetutor.config.security.jwt.JwtPreProcessingToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -25,13 +27,15 @@ import java.io.IOException;
 public class JwtAuthFilter extends AbstractAuthenticationProcessingFilter {
 
     private final HeaderTokenExtractor extractor;
+    private final JwtDecoder jwtDecoder;
 
     public JwtAuthFilter(
             RequestMatcher requiresAuthenticationRequestMatcher,
-            HeaderTokenExtractor extractor
+            HeaderTokenExtractor extractor,
+            JwtDecoder jwtDecoder
     ) {
         super(requiresAuthenticationRequestMatcher);
-
+        this.jwtDecoder = jwtDecoder;
         this.extractor = extractor;
     }
 
@@ -41,7 +45,7 @@ public class JwtAuthFilter extends AbstractAuthenticationProcessingFilter {
             HttpServletResponse response
     ) throws AuthenticationException, IOException {
 
-//        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = new ObjectMapper();
 
         // JWT 값을 담아주는 변수 TokenPayload
         String tokenPayload = request.getHeader("Authorization");
@@ -52,6 +56,17 @@ public class JwtAuthFilter extends AbstractAuthenticationProcessingFilter {
 //            objectMapper.writeValue(response.getWriter(),"로그인 후 이용해주세요");
 
             return null;
+        }
+
+        String accessToken = extractor.extract(tokenPayload, request);
+        if (jwtDecoder.isExpiredToken(accessToken)) {
+            // 어떤 요청이 들어왔을 때, 여기에 보내라? 인터샙터
+            // 오브젝트
+            // 같은 401인데 3번째 인자 메시지가 있으면 리프레쉬 해라
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setCharacterEncoding("UTF-8");
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            objectMapper.writeValue(response.getWriter(), "만료 된 토큰 입니다.");
         }
 
         JwtPreProcessingToken jwtToken = new JwtPreProcessingToken(

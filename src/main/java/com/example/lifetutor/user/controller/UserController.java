@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
@@ -36,10 +37,17 @@ public class UserController {
         return userService.showMyInfo(user);
     }
 
+    //내가 쓴 글 보기
     @GetMapping("mypage/postings")
     public ResponseEntity<ShowMyPostsResponseDto> showMyPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         User user = userDetails.getUser();
         return userService.showMyPosts(page,size,user);
+    }
+    //내가 댓글 단 글 보기
+    @GetMapping("mypage/comments/postings")
+    public ResponseEntity<ShowMyPostsResponseDto> showMyCommentInPost(@RequestParam int page, @RequestParam int size, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        User user = userDetails.getUser();
+        return userService.showMyCommentInPost(page,size,user);
     }
 
     //이메일 중복 체크
@@ -68,4 +76,9 @@ public class UserController {
         return userService.updateMyPassword(requestDto,user);
     }
 
+    //리프레시 토큰
+    @PutMapping("/refreshToken")
+    public ResponseEntity<?> reIssueRefreshToken(HttpServletRequest request) {
+        return userService.reIssueRefreshToken(request);
+    }
 }

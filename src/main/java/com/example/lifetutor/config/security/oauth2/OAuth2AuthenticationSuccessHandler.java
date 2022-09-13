@@ -2,7 +2,9 @@ package com.example.lifetutor.config.security.oauth2;
 
 import com.example.lifetutor.config.security.UserDetailsImpl;
 import com.example.lifetutor.config.security.jwt.JwtTokenUtils;
+import com.example.lifetutor.user.model.Auth;
 import com.example.lifetutor.user.model.User;
+import com.example.lifetutor.user.repositroy.AuthRepository;
 import com.example.lifetutor.user.repositroy.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -15,12 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
     private final UserRepository userRepository;
-
+    private final AuthRepository authRepository;
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
@@ -32,9 +35,20 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String username = (String) kakao_account.get("email");
         User user =  userRepository.findByUsername(username).get();
 
-        String jwt = JwtTokenUtils.generateJwtToken(new UserDetailsImpl(user));
+        String jwt = JwtTokenUtils.generateJwtToken(username);
+        String refreshToken = JwtTokenUtils.generateRefreshToken();
 
-        String url = makeRedirectUrl(jwt);
+        Optional<Auth> refreshTokenFound = authRepository.findByUsername(username);
+
+
+        if(refreshTokenFound.isPresent()){
+            refreshTokenFound.get().updateToken(refreshToken);
+            authRepository.save(refreshTokenFound.get());
+        }else{
+            authRepository.save(new Auth(username,refreshToken));
+        }
+
+        String url = makeRedirectUrl(jwt,refreshToken);
 
         System.out.println("url: " + url);
 
@@ -45,8 +59,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         getRedirectStrategy().sendRedirect(request, response, url);
     }
 
-    private String makeRedirectUrl(String token) {
-        return UriComponentsBuilder.fromUriString("https://it-ing.co.kr/oauth2/redirect/"+token)
+    private String makeRedirectUrl(String token,String refreshToken) {
+        return UriComponentsBuilder.fromUriString("http://localhost:3000/oauth2/redirect/"+"accessToken="+token+"&refreshToken="+refreshToken)
                 .build().toUriString();
     }
 }
