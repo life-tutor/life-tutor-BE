@@ -14,9 +14,7 @@ import com.example.lifetutor.post.repository.PostRepository;
 import com.example.lifetutor.user.dto.request.SignupRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyInfoRequestDto;
 import com.example.lifetutor.user.dto.request.UpdateMyPasswordRequestDto;
-import com.example.lifetutor.user.dto.response.ContentResponseDto;
-import com.example.lifetutor.user.dto.response.MyPageResponseDto;
-import com.example.lifetutor.user.dto.response.ShowMyPostsResponseDto;
+import com.example.lifetutor.user.dto.response.*;
 import com.example.lifetutor.user.model.Auth;
 import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
@@ -38,7 +36,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -102,7 +99,7 @@ public class UserService {
             String nickname = post.getUser().getNickname();
             String title = post.getTitle();
             LocalDateTime date = post.getDate();
-            String content = post.getPosting_content();
+            String posting_content = post.getPosting_content();
             List<PostHashtag> hashtag = postHashtagRepository.findAllByPostId(post.getId());
             int comment_count = post.getComments().size();
             int like_count = post.getLikes().size();
@@ -114,14 +111,14 @@ public class UserService {
                 hashtags.add(hashtag1.getHashtag());
             }
 
-            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId, nickname, title, date, content, hashtags, comment_count, like_count);
+            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId, nickname, title, date, posting_content, hashtags, comment_count, like_count);
             contentResponseDtos.add(contentResponseDto);
         }
-        ShowMyPostsResponseDto showMyPostsResponseDto = new ShowMyPostsResponseDto(contentResponseDtos, posts.isLast());
+        ShowMyPostsResponseDto showMyPostsResponseDto = new ShowMyPostsResponseDto(contentResponseDtos,user.getUser_type(),posts.isLast());
         return new ResponseEntity<>(showMyPostsResponseDto, HttpStatus.valueOf(200));
     }
 
-    public ResponseEntity<ShowMyPostsResponseDto> showMyCommentInPost(int page, int size, User user) {
+    public ResponseEntity<ShowMyCommentInPostResponseDto> showMyCommentInPost(int page, int size, User user) {
         Sort.Direction direction = Sort.Direction.DESC;
         Sort sort = Sort.by(direction, "date");
 
@@ -130,16 +127,17 @@ public class UserService {
 
         List<Comment> commentList = comments.getContent();
 
-        List<ContentResponseDto> contentResponseDtos = new ArrayList<>();
-        for(int i = 0 ; i < commentList.size(); i++) {
-            Long postingId = commentList.get(i).getPost().getId();
-            String nickname = commentList.get(i).getPost().getUser().getNickname();
-            String title = commentList.get(i).getPost().getTitle();
-            LocalDateTime date = commentList.get(i).getDate();
-            String content = commentList.get(i).getPost().getPosting_content();
-            List<PostHashtag> hashtag = postHashtagRepository.findAllByPostId(commentList.get(i).getPost().getId());
-            int comment_count = commentList.get(i).getPost().getComments().size();
-            int like_count = commentList.get(i).getLikes().size();
+        List<MyCommentResponseDto> myCommentResponseDtos = new ArrayList<>();
+        for (Comment comment : commentList) {
+            Long postingId = comment.getPost().getId();
+            String nickname = comment.getPost().getUser().getNickname();
+            String title = comment.getPost().getTitle();
+            LocalDateTime date = comment.getDate();
+            String posting_content = comment.getPost().getPosting_content();
+            List<Comment> commentList1 = comment.getPost().getComments();
+            List<PostHashtag> hashtag = postHashtagRepository.findAllByPostId(comment.getPost().getId());
+            int comment_count = comment.getPost().getComments().size();
+            int like_count = comment.getLikes().size();
 
             List<String> hashtags = new ArrayList<>();
 
@@ -148,11 +146,11 @@ public class UserService {
                 hashtags.add(hashtag1.getHashtag());
             }
 
-            ContentResponseDto contentResponseDto = new ContentResponseDto(postingId, nickname, title, date, content, hashtags, comment_count, like_count);
-            contentResponseDtos.add(contentResponseDto);
+            MyCommentResponseDto myCommentResponseDto = new MyCommentResponseDto(postingId, nickname, title, date, posting_content, commentList1, hashtags, comment_count, like_count);
+            myCommentResponseDtos.add(myCommentResponseDto);
         }
-        ShowMyPostsResponseDto showMyPostsResponseDto = new ShowMyPostsResponseDto(contentResponseDtos,comments.isLast());
-        return new ResponseEntity<>(showMyPostsResponseDto, HttpStatus.valueOf(200));
+        ShowMyCommentInPostResponseDto showMyCommentInPostResponseDto = new ShowMyCommentInPostResponseDto(myCommentResponseDtos, comments.isLast());
+        return new ResponseEntity<>(showMyCommentInPostResponseDto, HttpStatus.valueOf(200));
     }
 
     public void checkEmail(String username) {
