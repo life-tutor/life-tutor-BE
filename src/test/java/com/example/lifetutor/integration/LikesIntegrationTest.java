@@ -2,8 +2,6 @@ package com.example.lifetutor.integration;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.example.lifetutor.comment.model.Comment;
-import com.example.lifetutor.comment.repository.CommentRepository;
 import com.example.lifetutor.post.model.Post;
 import com.example.lifetutor.post.repository.PostRepository;
 import org.junit.jupiter.api.BeforeEach;

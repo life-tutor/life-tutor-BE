@@ -81,7 +81,6 @@ public class RoomService {
 
     // 채팅방 생성
     public ResponseEntity<Long> createRoom(RoomRequestDto requestDto, User user){
-        requestDto.isEmpty();
         Room room = new Room(requestDto.getTitle(),user);
         roomRepository.save(room);
         if(!requestDto.getHashtag().isEmpty()) saveRoomHashtag(requestDto, room);
@@ -93,7 +92,6 @@ public class RoomService {
         Room room = foundRoom(room_id);
         // 작성자 확인
         room.validateUser(user);
-        requestDto.isEmpty();
         if(room.getEnters().size() < 2) room.update(requestDto);
         else throw new IllegalArgumentException("채팅방에 게스트가 입장한 후엔 수정이 불가능합니다.");
         // 해쉬태그는 추가할 수도 있으므로 삭제 후 다시 작성
@@ -132,18 +130,11 @@ public class RoomService {
         List<RoomHashtag> roomHashtags = new ArrayList<>();
         for(String hashtag : requestDto.getHashtag()){
             hashtag = hashtag.trim();
+            validateHashtag(hashtag);
             if(!hashtag.isEmpty()) tags.add(hashtag);
         }
-        for(String tag : tags) roomHashtags.add(saveHashtag(tag, room));
+        for(String tag : tags) roomHashtags.add(foundHashtag(tag, room));
         roomHashtagRepository.saveAll(roomHashtags);
-    }
-
-    // 해쉬태그 저장
-    public RoomHashtag saveHashtag(String tagStr, Room room){
-        validateHashtag(tagStr);
-        Hashtag tag = hashtagRepository.findByHashtag(tagStr);
-        if(tag == null) tag = new Hashtag(tagStr);
-        return new RoomHashtag(tag,room);
     }
 
     // 채팅방 해쉬태그 삭제 후 저장
@@ -156,9 +147,16 @@ public class RoomService {
         }
         roomHashtags.clear();
         if(!requestDto.getHashtag().isEmpty()){
-            for(String tagStr : requestDto.getHashtag()) roomHashtags.add(saveHashtag(tagStr, room));
+            for(String tagStr : requestDto.getHashtag()) roomHashtags.add(foundHashtag(tagStr, room));
             roomHashtagRepository.saveAll(roomHashtags);
         }
+    }
+
+    // 해쉬태그 찾기
+    public RoomHashtag foundHashtag(String tagStr, Room room){
+        Hashtag tag = hashtagRepository.findByHashtag(tagStr);
+        if(tag == null) tag = new Hashtag(tagStr);
+        return new RoomHashtag(tag,room);
     }
 
     // 해쉬태그 삭제
