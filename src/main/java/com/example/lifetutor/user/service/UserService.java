@@ -20,6 +20,7 @@ import com.example.lifetutor.user.model.Role;
 import com.example.lifetutor.user.model.User;
 import com.example.lifetutor.user.repositroy.AuthRepository;
 import com.example.lifetutor.user.repositroy.UserRepository;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -124,29 +125,18 @@ public class UserService {
 
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Comment> comments = commentRepository.findAllByUser(pageable,user);
-
         List<Comment> commentList = comments.getContent();
 
         List<MyCommentResponseDto> myCommentResponseDtos = new ArrayList<>();
         for (Comment comment : commentList) {
-            Long postingId = comment.getPost().getId();
-            String nickname = comment.getPost().getUser().getNickname();
-            String title = comment.getPost().getTitle();
-            LocalDateTime date = comment.getDate();
-            String posting_content = comment.getPost().getPosting_content();
-            List<Comment> commentList1 = comment.getPost().getComments();
-            List<PostHashtag> hashtag = postHashtagRepository.findAllByPostId(comment.getPost().getId());
-            int comment_count = comment.getPost().getComments().size();
-            int like_count = comment.getLikes().size();
+            MyCommentResponseDto myCommentResponseDto = MyCommentResponseDto.builder()
+                    .posting_id(comment.getPost().getId())
+                    .title(comment.getPost().getTitle())
+                    .comment_content(comment.getContent())
+                    .comment_count(comment.getPost().getComments().size())
+                    .localDateTime(comment.getDate())
+                    .build();
 
-            List<String> hashtags = new ArrayList<>();
-
-            for (PostHashtag postHashtag : hashtag) {
-                Hashtag hashtag1 = hashtagRepository.findById(postHashtag.getHashtag().getId()).get();
-                hashtags.add(hashtag1.getHashtag());
-            }
-
-            MyCommentResponseDto myCommentResponseDto = new MyCommentResponseDto(postingId, nickname, title, date, posting_content, commentList1, hashtags, comment_count, like_count);
             myCommentResponseDtos.add(myCommentResponseDto);
         }
         ShowMyCommentInPostResponseDto showMyCommentInPostResponseDto = new ShowMyCommentInPostResponseDto(myCommentResponseDtos, comments.isLast());

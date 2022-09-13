@@ -1,25 +1,27 @@
 package com.example.lifetutor.user.dto.response;
 
-import com.example.lifetutor.comment.model.Comment;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 public class MyCommentResponseDto {
     private Long posting_id;
-    private String nickname;
     private String title;
-    private LocalDateTime date;
-    private String posting_content;
-    private List<Comment> comment;
-    private List<String> hashtag;
+    private String comment_content;
     private int comment_count;
-    private int like_count;
+    private LocalDateTime localDateTime;
+
+    @Builder
+    public MyCommentResponseDto(Long posting_id, String title, String comment_content, int comment_count, LocalDateTime localDateTime) {
+        this.posting_id = posting_id;
+        this.title = title;
+        this.comment_content = comment_content;
+        this.comment_count = comment_count;
+        this.localDateTime = localDateTime;
+    }
 }
 

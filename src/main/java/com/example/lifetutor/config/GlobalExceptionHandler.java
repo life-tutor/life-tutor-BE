@@ -43,7 +43,8 @@ public class GlobalExceptionHandler {
     }
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
-    public void handleExceptions(Exception e){
+    public ResponseEntity<String> handleExceptions(Exception e){
         Sentry.captureException(e);
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
